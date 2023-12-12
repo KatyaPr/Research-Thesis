@@ -1,0 +1,1760 @@
+########### Commmon dataset for MoA & Mental health & SC (18 to 21) ################
+library(foreign)
+library(stats)
+library(stringr)
+library(tidyverse)
+library(janitor)
+library(dplyr)
+library(gridExtra)
+library(pillar)
+library(ggplot2)
+library(writexl)
+library(readxl)
+library(tidyr)
+library(gtsummary)
+library(survey)
+
+#############################
+##### Importing Dataset #####
+#############################
+merged_EA_completed <- read_excel("C:/Users/.../Created datasets/Data_17_21_long_W.xlsx")
+dim(merged_EA_completed) # 2544 3547
+
+merged_EA_completed<- merged_EA_completed %>% 
+  filter(STATUS18 == 0 | STATUS19 == 0 | STATUS20 == 0 | STATUS21 == 0)
+
+
+#################################
+######  Social Cosesion  ########
+#################################
+
+# 1) Engagement 
+
+# 2018
+
+merged_EA_completed <- merged_EA_completed %>%
+  mutate(
+    P18N34 = ifelse(P18N34 < 0, NA, P18N34), # Replace negative values with NA
+    P18N35 = ifelse(P18N35 < 0, NA, P18N35), # Replace negative values with NA
+    Engagement_18 = case_when(
+      P18N34 == 2 & P18N35 == 2 ~ 0,
+      P18N34 == 1 & P18N35 == 1 ~ 1,
+      P18N34 == 2 & P18N35 == 1 ~ 1,
+      P18N34 == 1 & P18N35 == 2 ~ 1,
+    )
+  )
+
+
+merged_EA_completed %>% filter (STATUS18==0) %>% tabyl(P18N34, P18N35) %>% adorn_totals("row")
+merged_EA_completed %>% filter (STATUS18==0) %>% tabyl(Engagement_18, ) %>% adorn_totals("row")
+
+# 2019
+
+merged_EA_completed <- merged_EA_completed %>%
+  mutate(
+    P19N34 = ifelse(P19N34 < 0, NA, P19N34), # Replace negative values with NA
+    P19N35 = ifelse(P19N35 < 0, NA, P19N35), # Replace negative values with NA
+    Engagement_19 = case_when(
+      P19N34 == 2 & P19N35 == 2 ~ 0,
+      P19N34 == 1 & P19N35 == 1 ~ 1,
+      P19N34 == 2 & P19N35 == 1 ~ 1,
+      P19N34 == 1 & P19N35 == 2 ~ 1,
+    )
+  )
+
+
+merged_EA_completed %>% filter (STATUS19==0) %>% tabyl(P19N34, P19N35) %>% adorn_totals("row")
+merged_EA_completed %>% filter (STATUS19==0) %>% tabyl(Engagement_19, ) %>% adorn_totals("row")
+
+# 2020
+
+merged_EA_completed <- merged_EA_completed %>%
+  mutate(
+    P20N34 = ifelse(P20N34 < 0, NA, P20N34), # Replace negative values with NA
+    P20N35 = ifelse(P20N35 < 0, NA, P20N35), # Replace negative values with NA
+    Engagement_20 = case_when(
+      P20N34 == 2 & P20N35 == 2 ~ 0,
+      P20N34 == 1 & P20N35 == 1 ~ 1,
+      P20N34 == 2 & P20N35 == 1 ~ 1,
+      P20N34 == 1 & P20N35 == 2 ~ 1,
+    )
+  )
+
+
+merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(P20N34, P20N35) %>% adorn_totals("row")
+merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(Engagement_20, ) %>% adorn_totals("row")
+
+# 2021
+
+merged_EA_completed <- merged_EA_completed %>%
+  mutate(
+    P21N34 = ifelse(P21N34 < 0, NA, P21N34), # Replace negative values with NA
+    P21N35 = ifelse(P21N35 < 0, NA, P21N35), # Replace negative values with NA
+    Engagement_21 = case_when(
+      P21N34 == 2 & P21N35 == 2 ~ 0,
+      P21N34 == 1 & P21N35 == 1 ~ 1,
+      P21N34 == 2 & P21N35 == 1 ~ 1,
+      P21N34 == 1 & P21N35 == 2 ~ 1,
+    )
+  )
+
+
+merged_EA_completed %>% filter (STATUS21==0) %>% tabyl(P21N34, P21N35) %>% adorn_totals("row")
+merged_EA_completed %>% filter (STATUS21==0) %>% tabyl(Engagement_21, ) %>% adorn_totals("row")
+
+
+# 2)   Trust in people
+
+# 2018
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Trust_18 = ifelse(
+      is.na(STATUS18), 
+      NA, 
+      as.numeric(
+        ifelse(P18P45 %in% c(-8, -7, -3, -2, -1), NA, P18P45)))
+  )
+
+merged_EA_completed %>% filter (STATUS18==0) %>% tabyl(P18P45, Trust_18) %>% adorn_totals("row")
+
+
+# 2019
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Trust_19 = ifelse(
+      is.na(STATUS19), 
+      NA, 
+      as.numeric(
+        ifelse(P19P45 %in% c(-8, -7, -3, -2, -1), NA, P19P45)))
+  )
+
+merged_EA_completed %>% filter (STATUS19==0) %>% tabyl(P19P45, Trust_19) %>% adorn_totals("row")
+
+
+# 2020
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Trust_20 = ifelse(
+      is.na(STATUS20), 
+      NA, 
+      as.numeric(
+        ifelse(P20P45 %in% c(-8, -7, -3, -2, -1), NA, P20P45)))
+  )
+
+merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(P20P45, Trust_20) %>% adorn_totals("row")
+
+
+# 2021
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Trust_21 = ifelse(
+      is.na(STATUS21), 
+      NA, 
+      as.numeric(
+        ifelse(P21P45 %in% c(-8, -7, -3, -2, -1), NA, P21P45)))
+  )
+
+merged_EA_completed %>% filter (STATUS21==0) %>% tabyl(P21P45, Trust_21) %>% adorn_totals("row")
+
+
+
+# 3) Social relationship satisfaction   
+
+# 2018
+
+merged_EA_completed <- merged_EA_completed %>%
+  mutate(x_18 = ifelse(STATUS18 != 0, NA,
+                       ifelse(P18YTH07 >= 0 & P18W94 < 0, P18YTH07,
+                              ifelse(P18W94 >= 0 & P18YTH07 < 0, P18W94,
+                                     ifelse(P18W94 >= 0 & P18YTH07 >= 0, (P18W94 + P18YTH07)/2,
+                                            ifelse(P18W94 < 0 & P18YTH07 < 0, NA, NA))))))
+
+
+merged_EA_completed%>% filter (STATUS18==0) %>% tabyl(P18YTH07,P18W94 ) %>% adorn_totals("row") # 69 NA
+
+merged_EA_completed%>% filter (STATUS18==0) %>% tabyl(x_18, ) # 69 NA
+
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    SRS_18 = ifelse(
+      is.na(STATUS18), 
+      NA, 
+      as.numeric(
+        ifelse(P18QL04 %in% c(-8, -7, -3, -2, -1), NA, P18QL04) +
+          ifelse(x_18 %in% c(-8, -7, -3, -2, -1), NA, x_18)
+      )
+    )
+  )
+
+merged_EA_completed %>% filter (STATUS18==0) %>% tabyl(SRS_18, ) %>% adorn_totals("row") # 69 na
+
+merged_EA_completed%>% filter (STATUS18==0) %>% tabyl(x_18,SRS_18 ) %>% adorn_totals("row") # 69 NA
+
+# 2019
+
+merged_EA_completed <- merged_EA_completed %>%
+  mutate(x_19 = ifelse(STATUS19 != 0, NA,
+                       ifelse(P19YTH07 >= 0 & P19W94 < 0, P19YTH07,
+                              ifelse(P19W94 >= 0 & P19YTH07 < 0, P19W94,
+                                     ifelse(P19W94 >= 0 & P19YTH07 >= 0, (P19W94 + P19YTH07)/2,
+                                            ifelse(P19W94 < 0 & P19YTH07 < 0, NA, NA))))))
+
+
+merged_EA_completed%>% filter (STATUS19==0) %>% tabyl(P19YTH07,P19W94 ) %>% adorn_totals("row") # 58 NA
+
+merged_EA_completed%>% filter (STATUS19==0) %>% tabyl(x_19, ) # 58 NA
+
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    SRS_19 = ifelse(
+      is.na(STATUS19), 
+      NA, 
+      as.numeric(
+        ifelse(P19QL04 %in% c(-8, -7, -3, -2, -1), NA, P19QL04) +
+          ifelse(x_19 %in% c(-8, -7, -3, -2, -1), NA, x_19)
+      )
+    )
+  )
+
+merged_EA_completed %>% filter (STATUS19==0) %>% tabyl(SRS_19, ) %>% adorn_totals("row") # 60 NA
+
+merged_EA_completed%>% filter (STATUS19==0) %>% tabyl(x_19,P19QL04 ) %>% adorn_totals("row") # 60 NA
+
+# 2020
+
+merged_EA_completed <- merged_EA_completed %>%
+  mutate(x_20 = ifelse(STATUS20 != 0, NA,
+                       ifelse(P20YTH07 >= 0 & P20W94 < 0, P20YTH07,
+                              ifelse(P20W94 >= 0 & P20YTH07 < 0, P20W94,
+                                     ifelse(P20W94 >= 0 & P20YTH07 >= 0, (P20W94 + P20YTH07)/2,
+                                            ifelse(P20W94 < 0 & P20YTH07 < 0, NA, NA))))))
+
+
+merged_EA_completed%>% filter (STATUS20==0) %>% tabyl(P20YTH07,P20W94 ) %>% adorn_totals("row") # 147 NA
+
+merged_EA_completed%>% filter (STATUS20==0) %>% tabyl(x_20, ) # 147 NA
+
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    SRS_20 = ifelse(
+      is.na(STATUS20), 
+      NA, 
+      as.numeric(
+        ifelse(P20QL04 %in% c(-8, -7, -3, -2, -1), NA, P20QL04) +
+          ifelse(x_20 %in% c(-8, -7, -3, -2, -1), NA, x_20)
+      )
+    )
+  )
+
+merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(SRS_20, ) %>% adorn_totals("row") # 160 NA
+
+merged_EA_completed%>% filter (STATUS20==0) %>% tabyl(x_20,P20QL04 ) %>% adorn_totals("row") # 161 NA
+
+# 2021
+
+merged_EA_completed <- merged_EA_completed %>%
+  mutate(x_21 = ifelse(STATUS21 != 0, NA,
+                       ifelse(P21YTH07 >= 0 & P21W94 < 0, P21YTH07,
+                              ifelse(P21W94 >= 0 & P21YTH07 < 0, P21W94,
+                                     ifelse(P21W94 >= 0 & P21YTH07 >= 0, (P21W94 + P21YTH07)/2,
+                                            ifelse(P21W94 < 0 & P21YTH07 < 0, NA, NA))))))
+
+
+merged_EA_completed%>% filter (STATUS21==0) %>% tabyl(P21YTH07,P21W94 ) %>% adorn_totals("row") # 130 NA
+
+merged_EA_completed%>% filter (STATUS21==0) %>% tabyl(x_21, ) # 130 NA
+
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    SRS_21 = ifelse(
+      is.na(STATUS21), 
+      NA, 
+      as.numeric(
+        ifelse(P21QL04 %in% c(-8, -7, -3, -2, -1), NA, P21QL04) +
+          ifelse(x_21 %in% c(-8, -7, -3, -2, -1), NA, x_21)
+      )
+    )
+  )
+
+merged_EA_completed %>% filter (STATUS21==0) %>% tabyl(SRS_21, ) %>% adorn_totals("row") # 138 NA
+
+merged_EA_completed%>% filter (STATUS21==0) %>% tabyl(x_21,P21QL04 ) %>% adorn_totals("row") # 138 NA
+
+
+################
+##### MoA  #####
+################
+
+# 1) Financial independence ####
+
+# a) Contribution to HH finance
+
+# 2018
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Fin_Partic_18 = ifelse(
+      is.na(STATUS18) | (H18I57A1 < 0 & H18I57A2 < 0 & H18I57A3 < 0 & H18I57A4 < 0 & H18I57A5 < 0), 
+      NA, 
+      ifelse((IDPERS == H18I57A1| IDPERS == H18I57A2| IDPERS == H18I57A3| IDPERS == H18I57A4|IDPERS == H18I57A5), 1, 0)
+    )
+  )
+
+# 2019
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Fin_Partic_19 = ifelse(
+      is.na(STATUS19) | (H19I57A1 < 0 & H19I57A2 < 0 & H19I57A3 < 0 & H19I57A4 < 0 & H19I57A5 < 0), 
+      NA, 
+      ifelse((IDPERS == H19I57A1| IDPERS == H19I57A2| IDPERS == H19I57A3| IDPERS == H19I57A4|IDPERS == H19I57A5), 1, 0)
+    )
+  )
+
+# 2020
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Fin_Partic_20 = ifelse(
+      is.na(STATUS20) | (H20I57A1 < 0 & H20I57A2 < 0 & H20I57A3 < 0 & H20I57A4 < 0 & H20I57A5 < 0), 
+      NA, 
+      ifelse((IDPERS == H20I57A1| IDPERS == H20I57A2| IDPERS == H20I57A3| IDPERS == H20I57A4|IDPERS == H20I57A5), 1, 0)
+    )
+  )
+
+# 2021
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Fin_Partic_21 = ifelse(
+      is.na(STATUS21) | (H21I57A1 < 0 & H21I57A2 < 0 & H21I57A3 < 0 & H21I57A4 < 0 & H21I57A5 < 0), 
+      NA, 
+      ifelse((IDPERS == H21I57A1| IDPERS == H21I57A2| IDPERS == H21I57A3| IDPERS == H21I57A4|IDPERS == H21I57A5), 1, 0)
+    )
+  )
+
+# b) Expenses covering
+
+# 2018
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Exp_Cov_18 = ifelse(
+      is.na(STATUS18) | (H18I50 < 0), 
+      NA, 
+      ifelse((H18I50 == 1| H18I50 == 2), 1, 0)
+    )
+  )
+
+# 2019
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Exp_Cov_19 = ifelse(
+      is.na(STATUS19) | (H19I50 < 0), 
+      NA, 
+      ifelse((H19I50 == 1| H19I50 == 2), 1, 0)
+    )
+  )
+
+# 2020
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Exp_Cov_21 = ifelse(
+      is.na(STATUS21) | (H21I50 < 0), 
+      NA, 
+      ifelse((H21I50 == 1| H21I50 == 2), 1, 0)
+    )
+  )
+
+
+# 2021
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Exp_Cov_20 = ifelse(
+      is.na(STATUS20) | (H20I50 < 0), 
+      NA, 
+      ifelse((H20I50 == 1| H20I50 == 2), 1, 0)
+    )
+  )
+
+
+# c) Expenses covering and IDPERS pays
+
+#2018
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Fin_Indep_18 = ifelse(
+      is.na(Fin_Partic_18) | is.na(Exp_Cov_18), 
+      NA, 
+      ifelse((Fin_Partic_18 == 1 & Exp_Cov_18 == 1), 1, 0)
+    )
+  )
+
+#2019
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Fin_Indep_19 = ifelse(
+      is.na(Fin_Partic_19) | is.na(Exp_Cov_19), 
+      NA, 
+      ifelse((Fin_Partic_19 == 1 & Exp_Cov_19 == 1), 1, 0)
+    )
+  )
+
+#2020
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Fin_Indep_20 = ifelse(
+      is.na(Fin_Partic_20) | is.na(Exp_Cov_20), 
+      NA, 
+      ifelse((Fin_Partic_20 == 1 & Exp_Cov_20 == 1), 1, 0)
+    )
+  )
+
+#2021
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Fin_Indep_21 = ifelse(
+      is.na(Fin_Partic_21) | is.na(Exp_Cov_21), 
+      NA, 
+      ifelse((Fin_Partic_21 == 1 & Exp_Cov_21 == 1), 1, 0)
+    )
+  )
+
+
+
+
+# 2) Finding a job 
+# I'll try to avoid constructed variables 
+# and filter by P$$W01, P$$W02, P$$W03
+
+
+# 2018
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Job_18 = ifelse(
+      is.na(STATUS18) | (P18W01 < 0 & P18W02 < 0 & P18W03 < 0), 
+      NA, 
+      as.numeric(ifelse(P18W01 == 1 | P18W02 == 1 | P18W03 == 1, 1, 0))
+    )
+  )
+
+
+# 2019
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Job_19 = ifelse(
+      is.na(STATUS19) | (P19W01 < 0 & P19W02 < 0 & P19W03 < 0), 
+      NA, 
+      as.numeric(ifelse(P19W01 == 1 | P19W02 == 1 | P19W03 == 1, 1, 0))
+    )
+  )
+
+# 2020
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Job_20 = ifelse(
+      is.na(STATUS20) | (P20W01 < 0 & P20W02 < 0 & P20W03 < 0), 
+      NA, 
+      as.numeric(ifelse(P20W01 == 1 | P20W02 == 1 | P20W03 == 1, 1, 0))
+    )
+  )
+
+# 2021
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Job_21 = ifelse(
+      is.na(STATUS21) | (P21W01 < 0 & P21W02 < 0 & P21W03 < 0), 
+      NA, 
+      as.numeric(ifelse(P21W01 == 1 | P21W02 == 1 | P21W03 == 1, 1, 0))
+    )
+  )
+
+
+
+# 3) Stable relationship 
+
+# if they live together or more that 2 years together
+
+# 2018
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Stab_R_18 = ifelse(
+      is.na(STATUS18) | (YCOUPLE18 < 0 & P18D29 < 0), 
+      NA, 
+      as.numeric(ifelse(P18D29 == 1 | (1 < YCOUPLE18 & YCOUPLE18 < 2017), 1, 0))
+    )
+  )
+# 2019
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Stab_R_19 = ifelse(
+      is.na(STATUS19) | (YCOUPLE19 < 0 & P19D29 < 0), 
+      NA, 
+      as.numeric(ifelse(P19D29 == 1 | (1 < YCOUPLE19 & YCOUPLE19 < 2018), 1, 0))
+    )
+  )
+# 2020
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Stab_R_20 = ifelse(
+      is.na(STATUS20) | (YCOUPLE20 < 0 & P20D29 < 0), 
+      NA, 
+      as.numeric(ifelse(P20D29 == 1 | (1 < YCOUPLE20 & YCOUPLE20 < 2019), 1, 0))
+    )
+  )
+# 2021
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Stab_R_21 = ifelse(
+      is.na(STATUS21) | (YCOUPLE21 < 0 & P21D29 < 0), 
+      NA, 
+      as.numeric(ifelse(P21D29 == 1 | (1 < YCOUPLE21 & YCOUPLE21 < 2020), 1, 0))
+    )
+  )
+
+# 4) Independent housing  #
+
+merged_EA_completed %>% filter(STATUS18 ==0) %>%  tabyl(HLDTYP18, ADUK1_18)
+merged_EA_completed %>% filter(STATUS18 ==0) %>%  tabyl(HLDFFS18, ADUK1_18) # this or the next one to choose
+merged_EA_completed %>% filter(STATUS18 ==0) %>%  tabyl(HLDCEN18, ADUK1_18)
+
+# 2018
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Ind_H_18 = ifelse(
+      is.na(STATUS18) | (HLDCEN18 < 0 & HLDCEN18 == 3110), 
+      NA, 
+      as.numeric(ifelse(ADUK1_18 == 0, 1, 0))
+    )
+  )
+
+# 2019
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Ind_H_19 = ifelse(
+      is.na(STATUS19) | (HLDCEN19 < 0 & HLDCEN19 == 3110), 
+      NA, 
+      as.numeric(ifelse(ADUK1_19 == 0, 1, 0))
+    )
+  )
+
+# 2020
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Ind_H_20 = ifelse(
+      is.na(STATUS20) | (HLDCEN20 < 0 & HLDCEN20 == 3110), 
+      NA, 
+      as.numeric(ifelse(ADUK1_20 == 0, 1, 0))
+    )
+  )
+
+# 2021
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Ind_H_21 = ifelse(
+      is.na(STATUS21) | (HLDCEN21 < 0 & HLDCEN21 == 3110), 
+      NA, 
+      as.numeric(ifelse(ADUK1_21 == 0, 1, 0))
+    )
+  )
+
+# 5) Finishing education 
+
+# 2018
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Finish_Educ_18 = ifelse(
+      is.na(STATUS18) | (OCCUPA18 < 0 & P18E15 <0),
+      NA, 
+      as.numeric(ifelse(OCCUPA18 == 4 | P18E15 >= 0, 0, 1))
+    )
+  )
+
+# 2019
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Finish_Educ_19 = ifelse(
+      is.na(STATUS19) | (OCCUPA19 < 0 & P19E15 <0),
+      NA, 
+      as.numeric(ifelse(OCCUPA19 == 4 | P19E15 >= 0, 0, 1))
+    )
+  )
+
+# 2020
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Finish_Educ_20 = ifelse(
+      is.na(STATUS20) | (OCCUPA20 < 0 & P20E15 <0),
+      NA, 
+      as.numeric(ifelse(OCCUPA20 == 4 | P20E15 >= 0, 0, 1))
+    )
+  )
+
+
+# 2021
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Finish_Educ_21 = ifelse(
+      is.na(STATUS21) | (OCCUPA21 < 0 & P21E15 <0),
+      NA, 
+      as.numeric(ifelse(OCCUPA21 == 4 | P21E15 >= 0, 0, 1))
+    )
+  )
+
+
+# 6) Creation of a total score
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    MoA_18 = ifelse(
+      is.na(STATUS18), 
+      NA, 
+      as.numeric(
+        ifelse(is.na(Finish_Educ_18), NA, Finish_Educ_18) +
+          ifelse(is.na(Stab_R_18), NA, Stab_R_18) +
+          ifelse(is.na(Fin_Indep_18), NA, Fin_Indep_18) +
+          ifelse(is.na(Job_18), NA, Job_18) +
+          ifelse(is.na(Ind_H_18), NA, Ind_H_18)
+      )
+    )
+  )
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    MoA_19 = ifelse(
+      is.na(STATUS19), 
+      NA, 
+      as.numeric(
+        ifelse(is.na(Finish_Educ_19), NA, Finish_Educ_19) +
+          ifelse(is.na(Stab_R_19), NA, Stab_R_19) +
+          ifelse(is.na(Fin_Indep_19), NA, Fin_Indep_19) +
+          ifelse(is.na(Job_19), NA, Job_19) +
+          ifelse(is.na(Ind_H_19), NA, Ind_H_19)
+      )
+    )
+  )
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    MoA_20 = ifelse(
+      is.na(STATUS20), 
+      NA, 
+      as.numeric(
+        ifelse(is.na(Finish_Educ_20), NA, Finish_Educ_20) +
+          ifelse(is.na(Stab_R_20), NA, Stab_R_20) +
+          ifelse(is.na(Fin_Indep_20), NA, Fin_Indep_20) +
+          ifelse(is.na(Job_20), NA, Job_20) +
+          ifelse(is.na(Ind_H_20), NA, Ind_H_20)
+      )
+    )
+  )
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    MoA_21 = ifelse(
+      is.na(STATUS21), 
+      NA, 
+      as.numeric(
+        ifelse(is.na(Finish_Educ_21), NA, Finish_Educ_21) +
+          ifelse(is.na(Stab_R_21), NA, Stab_R_21) +
+          ifelse(is.na(Fin_Indep_21), NA, Fin_Indep_21) +
+          ifelse(is.na(Job_21), NA, Job_21) +
+          ifelse(is.na(Ind_H_21), NA, Ind_H_21)
+      )
+    )
+  )
+
+
+
+#####################################
+######   Mental health       ########
+#####################################
+
+# 1) Listlessness score creation
+
+# 2018
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Score_Listlessness_18 = ifelse(
+      is.na(STATUS18), 
+      NA, 
+      as.numeric(
+        ifelse(P18C06A %in% c(-8, -7, -3, -2, -1), NA, P18C06A) +
+          ifelse(P18C05A %in% c(-8, -7, -3, -2, -1), NA, P18C05A) +
+          ifelse(P18C184 %in% c(-8, -7, -3, -2, -1), NA, P18C184)
+      )
+    )
+  )
+
+# 2019
+
+merged_EA_completed <- merged_EA_completed %>%   mutate(
+  Score_Listlessness_19 = ifelse(
+    is.na(STATUS19), 
+    NA, 
+    as.numeric(
+      ifelse(P19C06A %in% c(-8, -7, -3, -2, -1), NA, P19C06A) +
+        ifelse(P19C05A %in% c(-8, -7, -3, -2, -1), NA, P19C05A) +
+        ifelse(P19C184 %in% c(-8, -7, -3, -2, -1), NA, P19C184)
+    )
+  )
+)
+
+
+# 2020
+
+merged_EA_completed <- merged_EA_completed %>%   mutate(
+  Score_Listlessness_20 = ifelse(
+    is.na(STATUS20), 
+    NA, 
+    as.numeric(
+      ifelse(P20C06A %in% c(-8, -7, -3, -2, -1), NA, P20C06A) +
+        ifelse(P20C05A %in% c(-8, -7, -3, -2, -1), NA, P20C05A) +
+        ifelse(P20C184 %in% c(-8, -7, -3, -2, -1), NA, P20C184)
+    )
+  )
+)
+
+# 2021
+
+merged_EA_completed <- merged_EA_completed %>%   mutate(
+  Score_Listlessness_21 = ifelse(
+    is.na(STATUS21), 
+    NA, 
+    as.numeric(
+      ifelse(P21C06A %in% c(-8, -7, -3, -2, -1), NA, P21C06A) +
+        ifelse(P21C05A %in% c(-8, -7, -3, -2, -1), NA, P21C05A) +
+        ifelse(P21C184 %in% c(-8, -7, -3, -2, -1), NA, P21C184)
+    )
+  )
+)
+
+
+# 2) Life satisfaction creation    
+
+
+# 2018
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    LS_18 = ifelse(
+      is.na(STATUS18), 
+      NA, 
+      as.numeric(
+        ifelse(P18C44 %in% c(-8, -7, -3, -2, -1), NA, P18C44)))
+  )
+
+# 2019
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    LS_19 = ifelse(
+      is.na(STATUS19), 
+      NA, 
+      as.numeric(
+        ifelse(P19C44 %in% c(-8, -7, -3, -2, -1), NA, P19C44)))
+  )
+# 2020
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    LS_20 = ifelse(
+      is.na(STATUS20), 
+      NA, 
+      as.numeric(
+        ifelse(P20C44 %in% c(-8, -7, -3, -2, -1), NA, P20C44)))
+  )
+
+# 2021
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    LS_21 = ifelse(
+      is.na(STATUS21), 
+      NA, 
+      as.numeric(
+        ifelse(P21C44 %in% c(-8, -7, -3, -2, -1), NA, P21C44)))
+  )
+
+# 3) Emotion score creation 
+
+# 2018
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Score_Neg_Emotions_18 = ifelse(
+      is.na(STATUS18), 
+      NA, 
+      as.numeric(
+        ifelse(P18C48 %in% c(-8, -7, -3, -2, -1), NA, P18C48) +
+          ifelse(P18C49 %in% c(-8, -7, -3, -2, -1), NA, P18C49) +
+          ifelse(P18C50 %in% c(-8, -7, -3, -2, -1), NA, P18C50) +
+          ifelse(P18C17 %in% c(-8, -7, -3, -2, -1), NA, P18C17) +
+          ifelse(P18C47 %in% c(-8, -7, -3, -2, -1), NA, 11- P18C47) +
+          ifelse(P18C18 %in% c(-8, -7, -3, -2, -1), NA, 11- P18C18)
+      )
+    )
+  )
+
+# 2019
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Score_Neg_Emotions_19 = ifelse(
+      is.na(STATUS19), 
+      NA, 
+      as.numeric(
+        ifelse(P19C48 %in% c(-8, -7, -3, -2, -1), NA, P19C48) +
+          ifelse(P19C49 %in% c(-8, -7, -3, -2, -1), NA, P19C49) +
+          ifelse(P19C50 %in% c(-8, -7, -3, -2, -1), NA, P19C50) +
+          ifelse(P19C17 %in% c(-8, -7, -3, -2, -1), NA, P19C17) +
+          ifelse(P19C47 %in% c(-8, -7, -3, -2, -1), NA, 11-P19C47) +
+          ifelse(P19C18 %in% c(-8, -7, -3, -2, -1), NA, 11-P19C18)
+      )
+    )
+  )
+
+# 2020
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Score_Neg_Emotions_20 = ifelse(
+      is.na(STATUS20), 
+      NA, 
+      as.numeric(
+        ifelse(P20C48 %in% c(-8, -7, -3, -2, -1), NA, P20C48) +
+          ifelse(P20C49 %in% c(-8, -7, -3, -2, -1), NA, P20C49) +
+          ifelse(P20C50 %in% c(-8, -7, -3, -2, -1), NA, P20C50) +
+          ifelse(P20C17 %in% c(-8, -7, -3, -2, -1), NA, P20C17) +
+          ifelse(P20C47 %in% c(-8, -7, -3, -2, -1), NA, 11- P20C47) +
+          ifelse(P20C18 %in% c(-8, -7, -3, -2, -1), NA, 11-P20C18)
+      )
+    )
+  )
+
+# 2021
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Score_Neg_Emotions_21 = ifelse(
+      is.na(STATUS21), 
+      NA, 
+      as.numeric(
+        ifelse(P21C48 %in% c(-8, -7, -3, -2, -1), NA, P21C48) +
+          ifelse(P21C49 %in% c(-8, -7, -3, -2, -1), NA, P21C49) +
+          ifelse(P21C50 %in% c(-8, -7, -3, -2, -1), NA, P21C50) +
+          ifelse(P21C17 %in% c(-8, -7, -3, -2, -1), NA, P21C17) +
+          ifelse(P21C47 %in% c(-8, -7, -3, -2, -1), NA, 11- P21C47) +
+          ifelse(P21C18 %in% c(-8, -7, -3, -2, -1), NA, 11- P21C18)
+      )
+    )
+  )
+
+
+#################################
+#### COMMON DATASET CREATION ####
+#################################
+
+# Create a new data set with the selected columns
+Dataset <- merged_EA_completed %>%
+  dplyr::select("IDPERS", starts_with("SEX"), starts_with("IDHOUS"), starts_with("AGE"),
+                starts_with("STATUS"), starts_with("EDUCAT"), starts_with("CANTON"), 
+                starts_with("PLINGU"), starts_with("OCCUPA"), 
+                "P18P10", "P19P10", "P20P10", "P21P10",
+                "P18MODES", "P18D29", "P18D161", "P18I01",  "P18C01", "COM2_18", 
+                "P18E14", "P19MODES", "P19D29", "P19D161", "P19I01", 
+                "P19C01", "COM2_19", "P19E14", "P20MODES", "P20D29",  
+                "P20D161", "P20I01", "P20C01",  "COM2_20", "P20E14", 
+                "P21MODES", "P21D29","P21D161", "P21I01", "P21C01",  "COM2_21","P21E14", 
+                starts_with("Finish_Educ"),starts_with("Job"),
+                starts_with("Exp_Cov"), starts_with("Fin_Partic"),
+                starts_with("Fin_Indep"), starts_with("Ind_H"),
+                starts_with("Stab_R"), starts_with("MoA"),
+                starts_with("AGE"),starts_with("new_weight"), 
+                starts_with("Score_Neg_Emotions"), 
+                starts_with("Score_Listlessness"), starts_with("LS"),
+                starts_with("SRS"), starts_with("Trust"), starts_with("Engagement")
+                 )
+
+
+
+# 2) Reencode variablesby year
+
+# 2018
+
+columns_to_inspect <- c( "P18MODES", "P18D29", "PLINGU18", "P18D161", "OCCUPA18", "P18P10", "P18I01", "EDUCAT18", "P18C01", "CANTON18", "COM2_18", "P18E14" )
+column_classes <- sapply(Dataset[, columns_to_inspect], class)
+print(column_classes)
+
+Dataset<- Dataset %>% mutate_at(vars(columns_to_inspect), as.character)
+
+
+# recode_factor variable names and values labels
+Dataset <- Dataset %>%
+  rename(
+    Mode_of_Data_Collection_18 = P18MODES,
+    Finan_satisfaction_18= P18I01,
+    Partner_18 = P18D29,
+    Interview_language_18 = PLINGU18,
+    Currently_Working_18 = OCCUPA18,
+    Currently_Training_18 = P18E14,
+    Education_Level_18 = EDUCAT18,
+    Health_Status_18 = P18C01,
+    Canton_of_Residence_18 = CANTON18,
+    Community_Typology_18 = COM2_18, 
+    Political_position_18 = P18P10
+  ) %>%
+  mutate(
+    Mode_of_Data_Collection_18 = recode_factor(Mode_of_Data_Collection_18,
+                                               '1' = 'CATI',
+                                               '2' = 'CAPI',
+                                               '3' = 'CAWI',
+                                               '4' = 'PAPI', 
+                                               .default = NA_character_),
+    Currently_Training_18 = recode_factor(Currently_Training_18,
+                                          '1' = 'Yes',
+                                          '2' = 'No', 
+                                          .default = NA_character_),      
+    Interview_language_18 = recode_factor(Interview_language_18, 
+                                          '1' = 'Latin',
+                                          '2' = 'German',
+                                          '3' = 'Latin', 
+                                          .default = NA_character_),
+    Finan_satisfaction_18 = recode_factor(Finan_satisfaction_18, 
+                                          '0' = '0',
+                                          '1' = '1',
+                                          '2' = '2',
+                                          '3' = '3',
+                                          '4' = '4',
+                                          '5' = '5',
+                                          '6' = '6',
+                                          '7' = '7',
+                                          '8' = '8',
+                                          '9' = '9',
+                                          '10' = '10', 
+                                          .default = NA_character_),
+    Partner_18 = recode_factor(Partner_18,
+                               '1' = 'Yes, Living Together',
+                               '2' = 'Yes, But Not Living Together',
+                               '3' = 'No', 
+                               .default =NA_character_),
+    Currently_Working_18 = recode_factor(Currently_Working_18,
+                                         '1' = 'Yes',
+                                         '2' = 'Yes',
+                                         '3' = 'Yes',
+                                         '4' = 'No',
+                                         '5' = 'Yes',
+                                         '6' = 'Yes',
+                                         '7' = 'No',
+                                         '8' = 'No',
+                                         '9' = 'No',
+                                         '10' = 'No',
+                                         '11' = 'No', 
+                                         .default = NA_character_),
+    Education_Level_18 = recode_factor(Education_Level_18,
+                                       '-6' = 'Pre-tertiary education',
+                                       '-5' = 'Pre-tertiary education',
+                                       '-4' = 'Pre-tertiary education',
+                                       '0' = 'Pre-tertiary education',
+                                       '1' = 'Pre-tertiary education',
+                                       '2' = 'Pre-tertiary education',
+                                       '3' = 'Pre-tertiary education',
+                                       '4' = 'Pre-tertiary education',
+                                       '5' = 'Pre-tertiary education',
+                                       '6' = 'Pre-tertiary education',
+                                       '7' = 'Tertiary education',
+                                       '8' = 'Pre-tertiary education',
+                                       '9' = 'Tertiary education',
+                                       '10' = 'Tertiary education',
+                                       .default =NA_character_),
+    Health_Status_18 = recode_factor(Health_Status_18,
+                                     '1' = '5',
+                                     '2' = '4',
+                                     '3' = '3',
+                                     '4' = '2',
+                                     '5' = '1', 
+                                     .default = NA_character_),
+    Canton_of_Residence_18 = recode_factor(Canton_of_Residence_18,
+                                           '1' = 'German',
+                                           '2' = 'German',
+                                           '3' = 'German',
+                                           '4' = 'German',
+                                           '5' = 'German',
+                                           '6' = 'German',
+                                           '7' = 'Latin',
+                                           '8' = 'Latin',
+                                           '9' = 'German',
+                                           '10' = 'German',
+                                           '11' = 'Latin',
+                                           '12' = 'German',
+                                           '13' = 'Latin',
+                                           '14' = 'German',
+                                           '15' = 'German',
+                                           '16' = 'German',
+                                           '17' = 'German',
+                                           '18' = 'German',
+                                           '19' = 'German',
+                                           '20' = 'German',
+                                           '21' = 'Latin',
+                                           '22' = 'German',
+                                           '23' = 'Latin',
+                                           '24' = 'Latin',
+                                           '25' = 'German',
+                                           '26' = 'German'),
+    Community_Typology_18 = recode_factor(Community_Typology_18,
+                                          '1' = 'Urban and Suburban',
+                                          '2' = 'Urban and Suburban',
+                                          '3' = 'Urban and Suburban',
+                                          '4' = 'Urban and Suburban',
+                                          '5' = 'Urban and Suburban',
+                                          '6' = 'Urban and Suburban',
+                                          '7' = 'Rural',
+                                          '8' = 'Rural',
+                                          '9' = 'Rural', 
+                                          .default = NA_character_), 
+    Political_position_18 = recode_factor( Political_position_18, 
+                                           '0' = '0',
+                                           '1' = '1',
+                                           '2' = '2',
+                                           '3' = '3',
+                                           '4' = '4',
+                                           '5' = '5',
+                                           '6' = '6',
+                                           '7' = '7',
+                                           '8' = '8',
+                                           '9' = '9',
+                                           '10' = '10', 
+                                           .default = NA_character_)
+  )
+
+
+# 2019
+
+columns_to_inspect <- c("P19MODES", "P19D29","P19P10", "PLINGU19", "P19D161", "OCCUPA19", "P19I01", "EDUCAT19", "P19C01", "CANTON19", "COM2_19", "P19E14" )
+column_classes <- sapply(Dataset [, columns_to_inspect], class)
+print(column_classes)
+
+Dataset <- Dataset  %>% mutate_at(vars(columns_to_inspect), as.character)
+
+# recode_factor variable names and values labels
+Dataset <- Dataset %>%
+  rename(
+    Mode_of_Data_Collection_19 = P19MODES,
+    Finan_satisfaction_19= P19I01,
+    Partner_19 = P19D29,
+    Interview_language_19 = PLINGU19,
+    Currently_Working_19 = OCCUPA19,
+    Currently_Training_19 = P19E14,
+    Education_Level_19 = EDUCAT19,
+    Health_Status_19 = P19C01,
+    Canton_of_Residence_19 = CANTON19,
+    Community_Typology_19 = COM2_19, 
+    Political_position_19 = P19P10
+  ) %>%
+  mutate(
+    Mode_of_Data_Collection_19 = recode_factor(Mode_of_Data_Collection_19,
+                                               '1' = 'CATI',
+                                               '2' = 'CAPI',
+                                               '3' = 'CAWI',
+                                               '4' = 'PAPI', 
+                                               .default = NA_character_),
+    Currently_Training_19 = recode_factor(Currently_Training_19, 
+                                          '1' = 'Yes',
+                                          '2' = 'No', 
+                                          .default = NA_character_),      
+    Interview_language_19 = recode_factor(Interview_language_19, 
+                                          '1' = 'Latin',
+                                          '2' = 'German',
+                                          '3' = 'Latin', 
+                                          .default = NA_character_),
+    Finan_satisfaction_19 = recode_factor(Finan_satisfaction_19, 
+                                          '0' = '0',
+                                          '1' = '1',
+                                          '2' = '2',
+                                          '3' = '3',
+                                          '4' = '4',
+                                          '5' = '5',
+                                          '6' = '6',
+                                          '7' = '7',
+                                          '8' = '8',
+                                          '9' = '9',
+                                          '10' = '10', 
+                                          .default = NA_character_),
+    Partner_19 = recode_factor(Partner_19,
+                               '1' = 'Yes, Living Together',
+                               '2' = 'Yes, But Not Living Together',
+                               '3' = 'No', 
+                               .default = NA_character_),
+    Currently_Working_19 = recode_factor(Currently_Working_19,
+                                         '1' = 'Yes',
+                                         '2' = 'Yes',
+                                         '3' = 'Yes',
+                                         '4' = 'No',
+                                         '5' = 'Yes',
+                                         '6' = 'Yes',
+                                         '7' = 'No',
+                                         '8' = 'No',
+                                         '9' = 'No',
+                                         '10' = 'No',
+                                         '11' = 'No', 
+                                         .default = NA_character_),
+    Education_Level_19 = recode_factor(Education_Level_19,
+                                       '-6' = 'Pre-tertiary education',
+                                       '-5' = 'Pre-tertiary education',
+                                       '-4' = 'Pre-tertiary education',
+                                       '0' = 'Pre-tertiary education',
+                                       '1' = 'Pre-tertiary education',
+                                       '2' = 'Pre-tertiary education',
+                                       '3' = 'Pre-tertiary education',
+                                       '4' = 'Pre-tertiary education',
+                                       '5' = 'Pre-tertiary education',
+                                       '6' = 'Pre-tertiary education',
+                                       '7' = 'Tertiary education',
+                                       '8' = 'Pre-tertiary education',
+                                       '9' = 'Tertiary education',
+                                       '10' = 'Tertiary education', 
+                                       .default = NA_character_),
+    Health_Status_19 = recode_factor(Health_Status_19,
+                                     '1' = '5',
+                                     '2' = '4',
+                                     '3' = '3',
+                                     '4' = '2',
+                                     '5' = '1',  
+                                     .default = NA_character_),
+    Canton_of_Residence_19 = recode_factor(Canton_of_Residence_19,
+                                           '1' = 'German',
+                                           '2' = 'German',
+                                           '3' = 'German',
+                                           '4' = 'German',
+                                           '5' = 'German',
+                                           '6' = 'German',
+                                           '7' = 'Latin',
+                                           '8' = 'Latin',
+                                           '9' = 'German',
+                                           '10' = 'German',
+                                           '11' = 'Latin',
+                                           '12' = 'German',
+                                           '13' = 'Latin',
+                                           '14' = 'German',
+                                           '15' = 'German',
+                                           '16' = 'German',
+                                           '17' = 'German',
+                                           '18' = 'German',
+                                           '19' = 'German',
+                                           '20' = 'German',
+                                           '21' = 'Latin',
+                                           '22' = 'German',
+                                           '23' = 'Latin',
+                                           '24' = 'Latin',
+                                           '25' = 'German',
+                                           '26' = 'German', 
+                                           .default = NA_character_),
+    Community_Typology_19 = recode_factor(Community_Typology_19,
+                                          '1' = 'Urban and Suburban',
+                                          '2' = 'Urban and Suburban',
+                                          '3' = 'Urban and Suburban',
+                                          '4' = 'Urban and Suburban',
+                                          '5' = 'Urban and Suburban',
+                                          '6' = 'Urban and Suburban',
+                                          '7' = 'Rural',
+                                          '8' = 'Rural',
+                                          '9' = 'Rural', 
+                                          .default = NA_character_),
+    Political_position_19 = recode_factor( Political_position_19, 
+                                           '0' = '0',
+                                           '1' = '1',
+                                           '2' = '2',
+                                           '3' = '3',
+                                           '4' = '4',
+                                           '5' = '5',
+                                           '6' = '6',
+                                           '7' = '7',
+                                           '8' = '8',
+                                           '9' = '9',
+                                           '10' = '10', 
+                                           .default = NA_character_)
+  )
+
+
+
+# 2020
+
+columns_to_inspect <- c( "P20MODES", "P20D29","P20P10", "PLINGU20", "P20D161", "OCCUPA20", "P20I01", "EDUCAT20", "P20C01", "CANTON20", "COM2_20","P20E14" )
+column_classes <- sapply(Dataset [, columns_to_inspect], class)
+print(column_classes)
+
+Dataset <- Dataset  %>% mutate_at(vars(columns_to_inspect), as.character)
+
+
+# recode_factor variable names and values labels
+Dataset <- Dataset %>%
+  rename(
+    Mode_of_Data_Collection_20 = P20MODES,
+    Finan_satisfaction_20= P20I01,
+    Partner_20 = P20D29,
+    Interview_language_20 = PLINGU20,
+    Currently_Working_20 = OCCUPA20,
+    Currently_Training_20 = P20E14,
+    Education_Level_20 = EDUCAT20,
+    Health_Status_20 = P20C01,
+    Canton_of_Residence_20 = CANTON20,
+    Community_Typology_20 = COM2_20, 
+    Political_position_20 = P20P10
+  ) %>%
+  mutate(
+    Mode_of_Data_Collection_20 = recode_factor(Mode_of_Data_Collection_20,
+                                               '1' = 'CATI',
+                                               '2' = 'CAPI',
+                                               '3' = 'CAWI',
+                                               '4' = 'PAPI', 
+                                               .default = NA_character_),
+    Currently_Training_20 = recode_factor(Currently_Training_20, 
+                                          '1' = 'Yes',
+                                          '2' = 'No', 
+                                          .default = NA_character_),      
+    Interview_language_20 = recode_factor(Interview_language_20, 
+                                          '1' = 'Latin',
+                                          '2' = 'German',
+                                          '3' = 'Latin', 
+                                          .default = NA_character_),
+    Finan_satisfaction_20 = recode_factor(Finan_satisfaction_20,
+                                          '0' = '0',
+                                          '1' = '1',
+                                          '2' = '2',
+                                          '3' = '3',
+                                          '4' = '4',
+                                          '5' = '5',
+                                          '6' = '6',
+                                          '7' = '7',
+                                          '8' = '8',
+                                          '9' = '9',
+                                          '10' = '10', 
+                                          .default = NA_character_),
+    Partner_20 = recode_factor(Partner_20,
+                               '1' = 'Yes, Living Together',
+                               '2' = 'Yes, But Not Living Together',
+                               '3' = 'No', 
+                               .default = NA_character_),
+    Currently_Working_20 = recode_factor(Currently_Working_20,
+                                         '1' = 'Yes',
+                                         '2' = 'Yes',
+                                         '3' = 'Yes',
+                                         '4' = 'No',
+                                         '5' = 'Yes',
+                                         '6' = 'Yes',
+                                         '7' = 'No',
+                                         '8' = 'No',
+                                         '9' = 'No',
+                                         '10' = 'No',
+                                         '11' = 'No', 
+                                         .default = NA_character_),
+    Education_Level_20 = recode_factor(Education_Level_20,
+                                       '-6' = 'Pre-tertiary education',
+                                       '-5' = 'Pre-tertiary education',
+                                       '-4' = 'Pre-tertiary education',
+                                       '0' = 'Pre-tertiary education',
+                                       '1' = 'Pre-tertiary education',
+                                       '2' = 'Pre-tertiary education',
+                                       '3' = 'Pre-tertiary education',
+                                       '4' = 'Pre-tertiary education',
+                                       '5' = 'Pre-tertiary education',
+                                       '6' = 'Pre-tertiary education',
+                                       '7' = 'Tertiary education',
+                                       '8' = 'Pre-tertiary education',
+                                       '9' = 'Tertiary education',
+                                       '10' = 'Tertiary education', 
+                                       .default = NA_character_),
+    Health_Status_20 = recode_factor(Health_Status_20,
+                                     '1' = '5',
+                                     '2' = '4',
+                                     '3' = '3',
+                                     '4' = '2',
+                                     '5' = '1', 
+                                     .default = NA_character_),
+    Canton_of_Residence_20 = recode_factor(Canton_of_Residence_20,
+                                           '1' = 'German',
+                                           '2' = 'German',
+                                           '3' = 'German',
+                                           '4' = 'German',
+                                           '5' = 'German',
+                                           '6' = 'German',
+                                           '7' = 'Latin',
+                                           '8' = 'Latin',
+                                           '9' = 'German',
+                                           '10' = 'German',
+                                           '11' = 'Latin',
+                                           '12' = 'German',
+                                           '13' = 'Latin',
+                                           '14' = 'German',
+                                           '15' = 'German',
+                                           '16' = 'German',
+                                           '17' = 'German',
+                                           '18' = 'German',
+                                           '19' = 'German',
+                                           '20' = 'German',
+                                           '21' = 'Latin',
+                                           '22' = 'German',
+                                           '23' = 'Latin',
+                                           '24' = 'Latin',
+                                           '25' = 'German',
+                                           '26' = 'German',
+                                           .default = NA_character_),
+    Community_Typology_20 = recode_factor(Community_Typology_20,
+                                          '1' = 'Urban and Suburban',
+                                          '2' = 'Urban and Suburban',
+                                          '3' = 'Urban and Suburban',
+                                          '4' = 'Urban and Suburban',
+                                          '5' = 'Urban and Suburban',
+                                          '6' = 'Urban and Suburban',
+                                          '7' = 'Rural',
+                                          '8' = 'Rural',
+                                          '9' = 'Rural', 
+                                          .default = NA_character_),
+    Political_position_20 = recode_factor( Political_position_20, 
+                                           '0' = '0',
+                                           '1' = '1',
+                                           '2' = '2',
+                                           '3' = '3',
+                                           '4' = '4',
+                                           '5' = '5',
+                                           '6' = '6',
+                                           '7' = '7',
+                                           '8' = '8',
+                                           '9' = '9',
+                                           '10' = '10', 
+                                           .default = NA_character_)
+  )
+
+
+# 2021
+
+columns_to_inspect <- c("P21MODES", "P21P10", "P21D29", "PLINGU21", "P21D161", "OCCUPA21", "P21I01", "EDUCAT21", "P21C01", "CANTON21", "COM2_21", "P21E14" )
+column_classes <- sapply(Dataset [, columns_to_inspect], class)
+print(column_classes)
+
+Dataset <- Dataset  %>% mutate_at(vars(columns_to_inspect), as.character)
+
+# recode_factor variable names and values labels
+Dataset <- Dataset %>%
+  rename(
+    Mode_of_Data_Collection_21 = P21MODES,
+    Finan_satisfaction_21= P21I01,
+    Partner_21 = P21D29,
+    Interview_language_21 = PLINGU21,
+    Currently_Working_21 = OCCUPA21,
+    Currently_Training_21 = P21E14,
+    Education_Level_21 = EDUCAT21,
+    Health_Status_21 = P21C01,
+    Canton_of_Residence_21 = CANTON21,
+    Community_Typology_21 = COM2_21, 
+    Political_position_21 = P21P10
+  ) %>%
+  mutate(
+    Mode_of_Data_Collection_21 = recode_factor(Mode_of_Data_Collection_21,
+                                               '1' = 'CATI',
+                                               '2' = 'CAPI',
+                                               '3' = 'CAWI',
+                                               '4' = 'PAPI', 
+                                               .default = NA_character_),
+    Currently_Training_21 = recode_factor(Currently_Training_21,
+                                          '1' = 'Yes',
+                                          '2' = 'No', 
+                                          .default = NA_character_),      
+    Interview_language_21 = recode_factor(Interview_language_21, 
+                                          '1' = 'Latin',
+                                          '2' = 'German',
+                                          '3' = 'Latin', 
+                                          .default = NA_character_),
+    Finan_satisfaction_21 = recode_factor(Finan_satisfaction_21, 
+                                          '0' = '0',
+                                          '1' = '1',
+                                          '2' = '2',
+                                          '3' = '3',
+                                          '4' = '4',
+                                          '5' = '5',
+                                          '6' = '6',
+                                          '7' = '7',
+                                          '8' = '8',
+                                          '9' = '9',
+                                          '10' = '10',  
+                                          .default = NA_character_),
+    Partner_21 = recode_factor(Partner_21,
+                               '1' = 'Yes, Living Together',
+                               '2' = 'Yes, But Not Living Together',
+                               '3' = 'No', 
+                               .default = NA_character_),
+    Currently_Working_21 = recode_factor(Currently_Working_21,
+                                         '1' = 'Yes',
+                                         '2' = 'Yes',
+                                         '3' = 'Yes',
+                                         '4' = 'No',
+                                         '5' = 'Yes',
+                                         '6' = 'Yes',
+                                         '7' = 'No',
+                                         '8' = 'No',
+                                         '9' = 'No',
+                                         '10' = 'No',
+                                         '11' = 'No', 
+                                         .default = NA_character_),
+    Education_Level_21 = recode_factor(Education_Level_21,
+                                       '-6' = 'Pre-tertiary education',
+                                       '-5' = 'Pre-tertiary education',
+                                       '-4' = 'Pre-tertiary education',
+                                       '0' = 'Pre-tertiary education',
+                                       '1' = 'Pre-tertiary education',
+                                       '2' = 'Pre-tertiary education',
+                                       '3' = 'Pre-tertiary education',
+                                       '4' = 'Pre-tertiary education',
+                                       '5' = 'Pre-tertiary education',
+                                       '6' = 'Pre-tertiary education',
+                                       '7' = 'Tertiary education',
+                                       '8' = 'Pre-tertiary education',
+                                       '9' = 'Tertiary education',
+                                       '10' = 'Tertiary education', 
+                                       .default = NA_character_),
+    Health_Status_21 = recode_factor(Health_Status_21,
+                                     '1' = '5',
+                                     '2' = '4',
+                                     '3' = '3',
+                                     '4' = '2',
+                                     '5' = '1', 
+                                     .default = NA_character_),
+    Canton_of_Residence_21 = recode_factor(Canton_of_Residence_21,
+                                           '1' = 'German',
+                                           '2' = 'German',
+                                           '3' = 'German',
+                                           '4' = 'German',
+                                           '5' = 'German',
+                                           '6' = 'German',
+                                           '7' = 'Latin',
+                                           '8' = 'Latin',
+                                           '9' = 'German',
+                                           '10' = 'German',
+                                           '11' = 'Latin',
+                                           '12' = 'German',
+                                           '13' = 'Latin',
+                                           '14' = 'German',
+                                           '15' = 'German',
+                                           '16' = 'German',
+                                           '17' = 'German',
+                                           '18' = 'German',
+                                           '19' = 'German',
+                                           '20' = 'German',
+                                           '21' = 'Latin',
+                                           '22' = 'German',
+                                           '23' = 'Latin',
+                                           '24' = 'Latin',
+                                           '25' = 'German',
+                                           '26' = 'German', 
+                                           .default = NA_character_),
+    Community_Typology_21 = recode_factor(Community_Typology_21,
+                                          '1' = 'Urban and Suburban',
+                                          '2' = 'Urban and Suburban',
+                                          '3' = 'Urban and Suburban',
+                                          '4' = 'Urban and Suburban',
+                                          '5' = 'Urban and Suburban',
+                                          '6' = 'Urban and Suburban',
+                                          '7' = 'Rural',
+                                          '8' = 'Rural',
+                                          '9' = 'Rural', 
+                                          .default = NA_character_), 
+    Political_position_21 = recode_factor( Political_position_21, 
+                                           '0' = '0',
+                                           '1' = '1',
+                                           '2' = '2',
+                                           '3' = '3',
+                                           '4' = '4',
+                                           '5' = '5',
+                                           '6' = '6',
+                                           '7' = '7',
+                                           '8' = '8',
+                                           '9' = '9',
+                                           '10' = '10', 
+                                           .default = NA_character_)
+  )
+
+
+Dataset_wide <- Dataset
+
+Dataset_wide %>%
+  dplyr::select(IDPERS) %>%
+  distinct() %>%
+  n_distinct() #2333
+
+
+# Select the columns with IDPERS and scores for different years
+selected_cols <- Dataset_wide %>%
+  dplyr::select(IDPERS, ends_with("18"), ends_with("19"), ends_with("20"), ends_with("21"))
+
+# Pivot the selected columns to long format
+pivoted_data <- selected_cols %>%
+  pivot_longer(cols = -IDPERS,
+               names_to = c(".value", "Year"),
+               names_pattern = "(.*)(18|19|20|21)$")
+
+
+pivoted_data %>% tabyl(AGE, Year)
+
+
+pivoted_data <- pivoted_data %>%
+  mutate(Gender = ifelse(SEX == 1, "Male", "Female"))
+
+
+pivoted_data %>%
+  dplyr::select(IDPERS) %>%
+  distinct() %>%
+  n_distinct() #2333
+
+Dataset_long<-pivoted_data
+
+# Year recoding
+Dataset_long <- Dataset_long %>%
+  mutate(Year = case_when(
+    Year == 18 ~ 2018,
+    Year == 19 ~ 2019,
+    Year == 20 ~ 2020,
+    Year == 21 ~ 2021,
+    TRUE ~ NA_integer_
+  ))
+Dataset_long$Year <- as.factor(Dataset_long$Year)
+
+
+
+
+write_xlsx(Dataset_long, path = "C:/Users/.../Created datasets/Dataset_long_MoA&MH&SC.xlsx")
+write_xlsx(Dataset_wide, path = "C:/Users/.../Created datasets/Dataset_wide_MoA&MH&SC.xlsx")
+
+
+
+
+##########################################
+#####  Correlation of  indicators  #######
+##########################################
+Dataset_long <- read_excel("C:/Users/.../Created datasets/Dataset_long_MoA&MH&SC.xlsx")
+
+# Removing all NA in weights
+Data <- Dataset_long[complete.cases(Dataset_long$new_weight_), ]
+Data %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) # 2333
+# 1)  Mental Health
+
+# Select the variables of interest
+selected_variables <- Data[, c("LS_", "Score_Neg_Emotions_", 
+                                     "Score_Listlessness_")]
+selected_variables <- sapply(selected_variables, as.numeric)
+
+selected_variables_no_na<-na.omit(selected_variables) # same -> 3703 observations
+
+
+# Create the correlation matrix
+correlation_matrix <- matrix(NA, nrow = ncol(selected_variables_no_na), ncol = ncol(selected_variables_no_na))
+
+# Add row and column names
+rownames(correlation_matrix) <- colnames(selected_variables_no_na)
+colnames(correlation_matrix) <- colnames(selected_variables_no_na)
+
+# Loop through each pair of variables and calculate the correlation coefficient and p-value
+for (i in 1:ncol(selected_variables_no_na)) {
+  for (j in 1:ncol(selected_variables_no_na)) {
+    cor_test <- cor.test(selected_variables_no_na[, i], selected_variables_no_na[, j], method = "pearson")
+    p_value <- p.adjust(cor_test$p.value, method = "bonferroni")
+    if (p_value < 0.001) {
+      correlation_matrix[i, j] <- paste(round(cor_test$estimate, 3), "***", sep = "")
+    } else if (p_value < 0.01) {
+      correlation_matrix[i, j] <- paste(round(cor_test$estimate, 3), "**", sep = "")
+    } else if (p_value < 0.05) {
+      correlation_matrix[i, j] <- paste(round(cor_test$estimate, 3), "*", sep = "")
+    } else {
+      correlation_matrix[i, j] <- round(cor_test$estimate, 3)
+    }
+  }
+}
+
+# 2)  MOA
+
+# Select the variables of interest
+selected_variables_2 <- Data[, c("Fin_Indep_", "Finish_Educ_", 
+                                       "Job_", "Ind_H_",
+                                       "Stab_R_","MoA_")]
+
+selected_variables_2 <- sapply(selected_variables_2, as.numeric)
+# Create the correlation matrix
+correlation_matrix_2 <- matrix(NA, nrow = ncol(selected_variables_2), ncol = ncol(selected_variables_2))
+
+
+# Add row and column names
+rownames(correlation_matrix_2) <- colnames(selected_variables_2)
+colnames(correlation_matrix_2) <- colnames(selected_variables_2)
+
+# Loop through each pair of variables and calculate the correlation coefficient and p-value
+for (i in 1:ncol(selected_variables_2)) {
+  for (j in 1:ncol(selected_variables_2)) {
+    cor_test <- cor.test(selected_variables_2[, i], selected_variables_2[, j], method = "pearson")
+    p_value <- p.adjust(cor_test$p.value, method = "bonferroni")
+    if (p_value < 0.001) {
+      correlation_matrix_2[i, j] <- paste(round(cor_test$estimate, 3), "***", sep = "")
+    } else if (p_value < 0.01) {
+      correlation_matrix_2[i, j] <- paste(round(cor_test$estimate, 3), "**", sep = "")
+    } else if (p_value < 0.05) {
+      correlation_matrix_2[i, j] <- paste(round(cor_test$estimate, 3), "*", sep = "")
+    } else {
+      correlation_matrix_2[i, j] <- round(cor_test$estimate, 3)
+    }
+  }
+}
+
+
+# 3)  Social Cohesion 
+
+# Select the variables of interest
+selected_variables_3 <- Data[, c("SRS_", "Trust_", 
+                                       "Engagement_")]
+selected_variables_3 <- sapply(selected_variables_3, as.numeric)
+
+selected_variables_no_na_3<-na.omit(selected_variables_3) # same -> 3703 observations
+
+
+# Create the correlation matrix
+correlation_matrix_3 <- matrix(NA, nrow = ncol(selected_variables_no_na_3), 
+                               ncol = ncol(selected_variables_no_na_3))
+
+# Add row and column names
+rownames(correlation_matrix_3) <- colnames(selected_variables_no_na_3)
+colnames(correlation_matrix_3) <- colnames(selected_variables_no_na_3)
+
+# Loop through each pair of variables and calculate the correlation coefficient and p-value
+for (i in 1:ncol(selected_variables_no_na_3)) {
+  for (j in 1:ncol(selected_variables_no_na_3)) {
+    cor_test <- cor.test(selected_variables_no_na_3[, i], selected_variables_no_na_3[, j], method = "pearson")
+    p_value <- p.adjust(cor_test$p.value, method = "bonferroni")
+    if (p_value < 0.001) {
+      correlation_matrix_3[i, j] <- paste(round(cor_test$estimate, 3), "***", sep = "")
+    } else if (p_value < 0.01) {
+      correlation_matrix_3[i, j] <- paste(round(cor_test$estimate, 3), "**", sep = "")
+    } else if (p_value < 0.05) {
+      correlation_matrix_3[i, j] <- paste(round(cor_test$estimate, 3), "*", sep = "")
+    } else {
+      correlation_matrix_3[i, j] <- round(cor_test$estimate, 3)
+    }
+  }
+}
+
+
+###########################################
+####  Description of the sample   #######
+###########################################
+
+# Age as numeric
+Data$AGE <- as.numeric(Data$AGE )
+# Financial satisfaction as numeric 
+Data$Finan_satisfaction_ <- as.numeric(Data$Finan_satisfaction_ )
+# Health_Status_ as numeric 
+Data$Health_Status_ <- as.numeric(Data$Health_Status_ )
+# Engagement
+Data$Engagement_ <- as.factor(Data$Engagement_ )
+levels(Data$Engagement_)
+Data$Engagement_ <- relevel(Data$Engagement_, ref = "0")
+# Finishing Education
+Data$Finish_Educ_ <- as.factor(Data$Finish_Educ_ )
+levels(Data$Finish_Educ_)
+Data$Finish_Educ_ <- relevel(Data$Finish_Educ_, ref = "0")
+# Job 
+Data$Job_ <- as.factor(Data$Job_ )
+levels(Data$Job_)
+Data$Job_ <- relevel(Data$Job_, ref = "0")
+# Fin Indep
+Data$Fin_Indep_ <- as.factor(Data$Fin_Indep_ )
+levels(Data$Fin_Indep_)
+Data$Fin_Indep_ <- relevel(Data$Fin_Indep_, ref = "0")
+# Indep Housing
+Data$Ind_H_ <- as.factor(Data$Ind_H_ )
+levels(Data$Ind_H_)
+Data$Ind_H_ <- relevel(Data$Ind_H_, ref = "0")
+# Stable relationship
+Data$Stab_R_ <- as.factor(Data$Stab_R_ )
+levels(Data$Stab_R_)
+Data$Stab_R_ <- relevel(Data$Stab_R_, ref = "0")
+# Mode_of_Data_Collection_
+Data$Mode_of_Data_Collection_ <- as.factor(Data$Mode_of_Data_Collection_ )
+levels(Data$Mode_of_Data_Collection_)
+Data$Mode_of_Data_Collection_ <- relevel(Data$Mode_of_Data_Collection_, ref = "CATI")
+
+# Convert Interview_language_ to a factor
+Data$Interview_language_ <- as.factor(Data$Interview_language_ )
+levels(Data$Interview_language_)
+Data$Interview_language_ <- relevel(Data$Interview_language_, ref = "German")
+
+# Convert Gender & IDHOUS to a factor
+Data$Gender <- as.factor(Data$Gender)
+Data$IDHOUS <- as.factor(Data$IDHOUS)
+
+#################################
+# Description of the population #
+#################################
+
+# Weightened description (https://www.bookdown.org/rwnahhas/RMPH/survey-desc.html)
+Data_survey <- svydesign(ids = ~IDPERS, data = Data, weights = ~new_weight_ )
+
+tabyl( Data_survey[["variables"]][["Year"]])
+
+
+Data_survey$AGE <-as.numeric(Data_survey$AGE)
+
+svyby(~MoA_, by=~Year, design=Data_survey, svymean, na.rm = T)
+x<-svyby(~MoA_, by=~Year, design=Data_survey, svyvar, na.rm=T)
+sqrt(x$MoA_)
+svyby(~Health_Status_, by=~Year, design=Data_survey, svymean, na.rm = T)
+x<-svyby(~Health_Status_, by=~Year, design=Data_survey, svyvar, na.rm = T)
+sqrt(x$Health_Status_)
+svyby(~AGE, by=~Year, design=Data_survey, svymean)
+x<-svyby(~AGE, by=~Year, design=Data_survey, svyvar)
+sqrt(x$AGE)
+svyby(~Gender, by=~Year, design=Data_survey, svytotal)
+
+Data_survey[["variables"]][["Political_position_"]]<- as.numeric(Data_survey[["variables"]][["Political_position_"]])
+svyby(~Political_position_, by=~Year, design=Data_survey, svymean, na.rm = T)
+x<-svyby(~Political_position_, by=~Year, design=Data_survey, svyvar, na.rm=T)
+sqrt(x$Political_position_)
+
+Data_survey[["variables"]][["Score_Listlessness_"]]<- as.numeric(Data_survey[["variables"]][["Score_Listlessness_"]])
+svyby(~Score_Listlessness_, by=~Year, design=Data_survey, svymean, na.rm = T)
+x<-svyby(~Score_Listlessness_, by=~Year, design=Data_survey, svyvar, na.rm=T)
+sqrt(x$Score_Listlessness_)
+
+Data_survey %>% 
+  tbl_svysummary(
+    by = Year,
+    # Use include to select variables
+    include = c(Gender, Mode_of_Data_Collection_, Interview_language_,Finan_satisfaction_, 
+                Health_Status_,Partner_, Education_Level_,Community_Typology_,
+                MoA_,Finish_Educ_, Fin_Indep_, Stab_R_, Job_, Ind_H_,
+                SRS_,Trust_, Engagement_, Political_position_,
+                Score_Listlessness_, Score_Neg_Emotions_, LS_ ),
+    statistic = list(all_continuous()  ~ "{mean} ({sd})",
+                     all_categorical() ~ "{n}    ({p}%)"),
+  ) %>%
+  modify_header(label = "**Variable**",
+                all_stat_cols() ~ "**{level}**<br>N = {n} ({style_percent(p, digits=1)}%)") %>%
+  modify_caption("Weighted descriptive statistics, by year") %>%
+  bold_labels()
+
+# Non weightened description
+Data %>% group_by(Year) %>% summarise(mean = mean(MoA_, na.rm =T), sd = sd(MoA_, na.rm =T))
+Data %>% group_by(Year) %>% summarise(mean = mean(Health_Status_, na.rm =T), sd = sd(Health_Status_, na.rm =T))
+Data %>% group_by(Year) %>% summarise(mean = mean(Score_Listlessness_, na.rm =T), sd = sd(Score_Listlessness_, na.rm =T))
+Data %>% group_by(Year) %>% summarise(mean = mean(AGE), sd = sd(AGE, na.rm =T))
+
+Data$Political_position_<-as.numeric(Data$Political_position_)
+Data %>% group_by(Year) %>% summarise(mean = mean(Political_position_, na.rm =T), sd = sd(Political_position_, na.rm =T))
+
+Data %>%
+  select(Gender, Mode_of_Data_Collection_, Interview_language_,Finan_satisfaction_, 
+         Health_Status_,Partner_, Education_Level_,Community_Typology_,
+         MoA_,Finish_Educ_, Fin_Indep_, Stab_R_, Job_, Ind_H_, Year,
+         SRS_,Trust_, Engagement_, Score_Listlessness_, Score_Neg_Emotions_, LS_ ) %>%
+  tbl_summary(by = Year, 
+              statistic = list(
+                all_continuous() ~ "{mean} ({sd})", 
+                all_categorical() ~ "{n} ({p}%)"),  # stats and format for categorical columns
+              digits = all_continuous() ~ 1,  
+              missing_text = "Missing" 
+  )

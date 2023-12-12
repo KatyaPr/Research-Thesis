@@ -1,0 +1,1742 @@
+library(writexl)
+library(foreign)
+library(tidyverse)
+library(stats)
+library(stringr)
+library(janitor)
+library(dplyr)
+library(gridExtra)
+library(pillar)
+library(ggplot2)
+library(readxl)
+library(tidyr)
+library(gtsummary)
+library(gapminder)
+library(survey)
+
+##################################
+###### Creation of datasets ######
+##################################
+
+###### 1) Importing data ######
+
+### 1a) Importing Household data
+
+#SHP_HH file 2017
+HH_17<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W19_2017/SHP17_H_USER.sav", 
+                 to.data.frame = TRUE,
+                 use.value.labels = FALSE,# Does not convert variables with value labels into factors
+                 use.missings = FALSE)# Does not convert negative values into missing values (NA).
+HH_17=HH_17[order(HH_17$IDHOUS17),]
+#SHP_HH file 2018
+HH_18<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W20_2018/SHP18_H_USER.sav", 
+                 to.data.frame = TRUE,
+                 use.value.labels = FALSE,# Does not convert variables with value labels into factors
+                 use.missings = FALSE)# Does not convert negative values into missing values (NA).
+HH_18=HH_18[order(HH_18$IDHOUS18),]
+
+#SHP_HH file 2019
+HH_19<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W21_2019/SHP19_H_USER.sav", 
+                 to.data.frame = TRUE,
+                 use.value.labels = FALSE,# Does not convert variables with value labels into factors
+                 use.missings = FALSE)# Does not convert negative values into missing values (NA).
+HH_19=HH_19[order(HH_19$IDHOUS19),]
+
+#SHP_HH file 2020
+HH_20<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W22_2020/SHP20_H_USER.sav", 
+                 to.data.frame = TRUE,
+                 use.value.labels = FALSE,# Does not convert variables with value labels into factors
+                 use.missings = FALSE)# Does not convert negative values into missing values (NA).
+HH_20=HH_20[order(HH_20$IDHOUS20),]
+
+#SHP_HH file 2021  
+HH_21<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W23_2021/SHP21_H_USER.sav", 
+                 to.data.frame = TRUE,
+                 use.value.labels = FALSE,# Does not convert variables with value labels into factors
+                 use.missings = FALSE)# Does not convert negative values into missing values (NA).
+HH_21=HH_21[order(HH_21$IDHOUS21),]
+
+### 1b) Importing Personal data + filtering on age [18;25]
+
+#SHP_Individual file 2017 
+P_17<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W19_2017/SHP17_P_USER.sav", 
+                to.data.frame = TRUE,
+                use.value.labels = FALSE,# Does not convert variables with value labels into factors
+                use.missings = FALSE)# Does not convert negative values into missing values (NA).
+
+P_17=P_17[order(P_17$IDHOUS17, P_17$IDPERS),]
+
+P_EA_2017 <- P_17 %>% filter (AGE17 >=18 & AGE17 <=25) #filtering on age [18;25]
+
+#SHP_Individual file 2018  
+P_18<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W20_2018/SHP18_P_USER.sav", 
+                to.data.frame = TRUE,
+                use.value.labels = FALSE,# Does not convert variables with value labels into factors
+                use.missings = FALSE)# Does not convert negative values into missing values (NA).
+
+P_18=P_18[order(P_18$IDHOUS18, P_18$IDPERS),]
+
+P_EA_2018 <- P_18 %>% filter (AGE18 >=18 & AGE18 <=25) #filtering on age [18;25]
+
+#SHP_Individual file 2019  
+P_19<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W21_2019/SHP19_P_USER.sav", 
+                to.data.frame = TRUE,
+                use.value.labels = FALSE,# Does not convert variables with value labels into factors
+                use.missings = FALSE)# Does not convert negative values into missing values (NA).
+
+P_19=P_19[order(P_19$IDHOUS19, P_19$IDPERS),]
+
+P_EA_19 <- P_19 %>% filter (AGE19 >=18 & AGE19 <=25) #filtering on age [18;25]
+
+#SHP_Individual file 2020
+P_20<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W22_2020/SHP20_P_USER.sav", 
+                to.data.frame = TRUE,
+                use.value.labels = FALSE,# Does not convert variables with value labels into factors
+                use.missings = FALSE)# Does not convert negative values into missing values (NA).
+
+P_20=P_20[order(P_20$IDHOUS20, P_20$IDPERS),]
+
+P_EA_20 <- P_20 %>% filter (AGE20 >=18 & AGE20 <=25) #filtering on age [18;25]
+
+#SHP_Individual file 2021
+P_21<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W23_2021/SHP21_P_USER.sav", 
+                to.data.frame = TRUE,
+                use.value.labels = FALSE,# Does not convert variables with value labels into factors
+                use.missings = FALSE)# Does not convert negative values into missing values (NA).
+
+P_21=P_21[order(P_21$IDHOUS21, P_21$IDPERS),]
+
+P_EA_21 <- P_21 %>% filter (AGE21 >=18 & AGE21 <=25) #filtering on age [18;25]
+
+### 1c) Merging household files on individual files by year
+
+# Merging 2017
+
+HH_P_EA_17 <- merge(HH_17, P_EA_2017, by = "IDHOUS17")
+HH_P_EA_17=HH_P_EA_17[order(HH_P_EA_17$IDHOUS17, HH_P_EA_17$IDPERS),]
+
+HH_P_EA_17 %>% select(ends_with(".x"), ends_with(".y")) 
+# To see the duplicated columns, IDINT.x FILTER17.x IDINT.y FILTER17.y
+# Scince I need none of them I'll delete all
+
+HH_P_EA_17  <- HH_P_EA_17  %>%
+  select(-ends_with(".x"), -ends_with(".y"))
+
+HH_P_EA_17  <- distinct(HH_P_EA_17,IDPERS, .keep_all = TRUE) 
+# This code removes duplicate rows based on the IDPERS
+
+HH_P_EA_17<- HH_P_EA_17[complete.cases(HH_P_EA_17), ]
+# To save only the rows where there are no missing values in any column
+
+dim(HH_P_EA_17) # 1399  692
+# Merging 2018
+
+HH_P_EA_18 <- merge(HH_18, P_EA_2018, by = "IDHOUS18")
+HH_P_EA_18=HH_P_EA_18[order(HH_P_EA_18$IDHOUS18, HH_P_EA_18$IDPERS),]
+
+HH_P_EA_18 %>% select(ends_with(".x"), ends_with(".y")) 
+
+HH_P_EA_18  <- HH_P_EA_18  %>%
+  select(-ends_with(".x"), -ends_with(".y"))
+
+HH_P_EA_18  <- distinct(HH_P_EA_18,IDPERS, .keep_all = TRUE) 
+
+HH_P_EA_18<- HH_P_EA_18[complete.cases(HH_P_EA_18), ]
+
+dim(HH_P_EA_18) # 1388  681
+
+# Merging 2019
+
+HH_P_EA_19 <- merge(HH_19, P_EA_19, by = "IDHOUS19")
+HH_P_EA_19=HH_P_EA_19[order(HH_P_EA_19$IDHOUS19, HH_P_EA_19$IDPERS),]
+HH_P_EA_19  <- HH_P_EA_19  %>%
+  select(-ends_with(".x"), -ends_with(".y"))
+HH_P_EA_19  <- distinct(HH_P_EA_19,IDPERS, .keep_all = TRUE) 
+HH_P_EA_19<- HH_P_EA_19[complete.cases(HH_P_EA_19), ]
+
+dim(HH_P_EA_19) # 1299 761
+
+# Merging 2020
+
+HH_P_EA_20 <- merge(HH_20, P_EA_20, by = "IDHOUS20")
+HH_P_EA_20=HH_P_EA_20[order(HH_P_EA_20$IDHOUS20, HH_P_EA_20$IDPERS),]
+HH_P_EA_20  <- HH_P_EA_20  %>%
+  select(-ends_with(".x"), -ends_with(".y"))
+HH_P_EA_20  <- distinct(HH_P_EA_20,IDPERS, .keep_all = TRUE) 
+HH_P_EA_20<- HH_P_EA_20[complete.cases(HH_P_EA_20), ]
+
+dim(HH_P_EA_20) # 2644  698
+
+# Merging 2021
+
+HH_P_EA_21 <- merge(HH_21, P_EA_21, by = "IDHOUS21")
+HH_P_EA_21=HH_P_EA_21[order(HH_P_EA_21$IDHOUS21, HH_P_EA_21$IDPERS),]
+HH_P_EA_21  <- HH_P_EA_21  %>%
+  select(-ends_with(".x"), -ends_with(".y"))
+HH_P_EA_21  <- distinct(HH_P_EA_21,IDPERS, .keep_all = TRUE) 
+HH_P_EA_21<- HH_P_EA_21[complete.cases(HH_P_EA_21), ]
+
+dim(HH_P_EA_21) # 2066  714
+
+
+#######################################################################################
+### 2) Exclusion of participants who did not complete the individual questionnaire  ###
+#######################################################################################
+
+#
+### 2a) Importing Individual Masterfiles scince it has information on participation 
+#
+
+Masterfile_P<-read.spss("C:/Users/.../SHP-Data-WA-SPSS/SHP_MP.sav", 
+                        to.data.frame = TRUE,
+                        use.value.labels = FALSE,# Does not convert variables with value labels into factors
+                        use.missings = FALSE)# Does not convert negative values into missing values (NA).
+
+
+#
+### 2b) Merging the HH_P_EA$$ datasets to Masterfile_P based on IDPERS to explore the participation
+#
+
+# 2017
+
+HH_P_EA_MP_17 <- merge(Masterfile_P, HH_P_EA_17, by = "IDPERS", all = FALSE) # The 'all' parameter set to FALSE ensures that only matching IDPERS are included.
+
+dim(HH_P_EA_MP_17) # 1399  838
+
+HH_P_EA_MP_17 %>% select(ends_with(".x"), ends_with(".y")) 
+# To see the duplicated columns, IDHOUS16.x STATUS17.x   PDATE17.x IDHOUS17.y STATUS17.y   PDATE17,y
+# Scince I need IDHOUS17 STATUS17  PDATE17, i'll delete those who ends with ".y" 
+
+HH_P_EA_MP_17 <- HH_P_EA_MP_17  %>%
+  select( -ends_with(".y"))
+
+HH_P_EA_MP_17  <- distinct(HH_P_EA_MP_17,IDPERS, .keep_all = TRUE) 
+# This code removes duplicate rows based on the IDPERS
+
+HH_P_EA_MP_17<- HH_P_EA_MP_17[complete.cases(HH_P_EA_MP_17), ]
+# To save only the rows where there are no missing values in any column
+
+dim(HH_P_EA_MP_17) # 1388  835
+
+# 2018
+
+HH_P_EA_MP_18 <- merge(Masterfile_P, HH_P_EA_18, by = "IDPERS", all = FALSE) # The 'all' parameter set to FALSE ensures that only matching IDPERS are included.
+
+dim(HH_P_EA_MP_18) # 1388  827
+
+HH_P_EA_MP_18 %>% select(ends_with(".x"), ends_with(".y")) 
+# To see the duplicated columns, IDHOUS18.x STATUS18.x   PDATE18.x IDHOUS18.y STATUS18.y   PDATE18.y
+# Scince I need IDHOUS18 STATUS18  PDATE18, i'll delete those who ends with ".y" 
+
+HH_P_EA_MP_18 <- HH_P_EA_MP_18  %>%
+  select( -ends_with(".y"))
+
+HH_P_EA_MP_18  <- distinct(HH_P_EA_MP_18,IDPERS, .keep_all = TRUE) 
+# This code removes duplicate rows based on the IDPERS
+
+HH_P_EA_MP_18<- HH_P_EA_MP_18[complete.cases(HH_P_EA_MP_18), ]
+# To save only the rows where there are no missing values in any column
+
+dim(HH_P_EA_MP_18) # 1388  824
+
+# 2019
+
+HH_P_EA_MP_19 <- merge(Masterfile_P, HH_P_EA_19, by = "IDPERS", all = FALSE) 
+dim(HH_P_EA_MP_19) # 1299  907
+
+HH_P_EA_MP_19 <- HH_P_EA_MP_19  %>%
+  select( -ends_with(".y"))
+
+HH_P_EA_MP_19  <- distinct(HH_P_EA_MP_19,IDPERS, .keep_all = TRUE) 
+
+HH_P_EA_MP_19<- HH_P_EA_MP_19[complete.cases(HH_P_EA_MP_19), ]
+
+dim(HH_P_EA_MP_19) # 1299  904
+
+# 2020
+
+HH_P_EA_MP_20 <- merge(Masterfile_P, HH_P_EA_20, by = "IDPERS", all = FALSE) 
+dim(HH_P_EA_MP_20) # 2644  844
+
+HH_P_EA_MP_20 <- HH_P_EA_MP_20  %>%
+  select( -ends_with(".y"))
+
+HH_P_EA_MP_20  <- distinct(HH_P_EA_MP_20,IDPERS, .keep_all = TRUE) 
+
+HH_P_EA_MP_20<- HH_P_EA_MP_20[complete.cases(HH_P_EA_MP_20), ]
+
+dim(HH_P_EA_MP_20) # 12644  841
+
+# 2021
+
+HH_P_EA_MP_21 <- merge(Masterfile_P, HH_P_EA_21, by = "IDPERS", all = FALSE) 
+dim(HH_P_EA_MP_21) # 2066  860
+
+HH_P_EA_MP_21 <- HH_P_EA_MP_21  %>%
+  select( -ends_with(".y"))
+
+HH_P_EA_MP_21  <- distinct(HH_P_EA_MP_21,IDPERS, .keep_all = TRUE) 
+
+HH_P_EA_MP_21<- HH_P_EA_MP_21[complete.cases(HH_P_EA_MP_21), ]
+
+dim(HH_P_EA_MP_21) # 2066  857
+
+#
+### 2b.1) Exploring the actual participation 
+#
+# Variable : STATUS$$, 
+# if val = 0 then the pearson was interviewed in 20$$ year
+participation_2017 <- HH_P_EA_MP_17 %>%
+  filter(STATUS17.x == 0) %>%
+  tabyl(AGE17) %>%
+  adorn_totals("row")
+# 922 completed questionnaire in 2017
+
+participation_2018 <- HH_P_EA_MP_18 %>%
+  filter(STATUS18.x == 0) %>%
+  tabyl(AGE18) %>%
+  adorn_totals("row")
+# 921 completed questionnaire in 2018
+
+participation_2019 <- HH_P_EA_MP_19 %>%
+  filter(STATUS19.x == 0) %>%
+  tabyl(AGE19) %>%
+  adorn_totals("row")
+# 825 completed questionnaire in 2019
+
+participation_2020 <- HH_P_EA_MP_20 %>%
+  filter(STATUS20.x == 0) %>%
+  tabyl(AGE20) %>%
+  adorn_totals("row")
+# 1640 completed questionnaire in 2020
+
+participation_2021 <- HH_P_EA_MP_21 %>% 
+  filter(STATUS21.x == 0) %>%
+  tabyl(AGE21) %>%
+  adorn_totals("row")
+# 1270 completed questionnaire in 2021
+
+
+#
+### 2c) Filtering IDPERS in HH_P_EA$$ datasets by Masterfile_P (STATUS$$.x ==0) 
+#
+
+# 2017
+# 1) Filter Masterfile_P to only include those with STATUS17.x == 0
+selected_persons_17 <- Masterfile_P %>% 
+  filter(STATUS17 == 0) %>%
+  select(IDPERS)
+
+# 2) Filter HH_P_EA_18 to only include individuals whose IDPERS exists in selected_persons
+HH_P_EA_C_17 <- HH_P_EA_17 %>% 
+  filter(IDPERS %in% selected_persons_17$IDPERS)
+
+dim(HH_P_EA_C_17) # 922 692
+
+# 2018
+# 1) Filter Masterfile_P 
+selected_persons_18 <- Masterfile_P %>% 
+  filter(STATUS18 == 0) %>%
+  select(IDPERS)
+
+# 2) Filter HH_P_EA_18 to only include individuals whose IDPERS exists in selected_persons
+HH_P_EA_C_18 <- HH_P_EA_18 %>% 
+  filter(IDPERS %in% selected_persons_18$IDPERS)
+
+dim(HH_P_EA_C_18) # 921 681
+
+# 2019
+selected_persons_19 <- Masterfile_P %>% 
+  filter(STATUS19 == 0) %>%
+  select(IDPERS)
+
+HH_P_EA_C_19 <- HH_P_EA_19 %>% 
+  filter(IDPERS %in% selected_persons_19$IDPERS)
+
+dim(HH_P_EA_C_19) # 825 761
+
+# 2020
+selected_persons_20 <- Masterfile_P %>% 
+  filter(STATUS20 == 0) %>%
+  select(IDPERS)
+
+HH_P_EA_C_20 <- HH_P_EA_20 %>% 
+  filter(IDPERS %in% selected_persons_20$IDPERS)
+
+dim(HH_P_EA_C_20) # 1640  698
+
+# 2021
+
+selected_persons_21 <- Masterfile_P %>% 
+  filter(STATUS21 == 0) %>%
+  select(IDPERS)
+
+HH_P_EA_C_21 <- HH_P_EA_21 %>% 
+  filter(IDPERS %in% selected_persons_21$IDPERS)
+
+dim(HH_P_EA_C_21) # 1270  714
+
+
+################################################################################
+###### Creation of a single complete file HH_P_EA_MP_C from 2017 to 2021 #######
+################################################################################
+
+# Create a list of your datasets
+datasets_list <- list(
+  HH_P_EA_C_17,
+  HH_P_EA_C_18,
+  HH_P_EA_C_19,
+  HH_P_EA_C_20,
+  HH_P_EA_C_21
+)
+
+# Merge all datasets in the list by IDPERS
+merged_EA_completed <- Reduce(function(x, y) merge(x, y, by = "IDPERS", all = TRUE), datasets_list)
+
+View(merged_EA_completed)
+dim(merged_EA_completed) # 2628 3542
+
+merged_EA_completed %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) #2628 unique IDPERS answered
+
+# 2) duplicate observations because same variables but different values 
+
+table(duplicated(merged_EA_completed$IDPERS)) # False 2628 -> no duplicate values in the IDPERS column after the merge operation.
+
+# Check for duplicated column names
+duplicated_columns <- names(merged_EA_completed)[duplicated(names(merged_EA_completed))]
+if (length(duplicated_columns) > 0) {
+  cat("Duplicated column names:")
+  cat(duplicated_columns, sep = ", ")
+} else {
+  cat("No duplicated column names found.")
+}
+
+### No duplicated column names found
+
+
+Data_17_21V2<- merged_EA_completed %>% 
+  filter(STATUS17 == 0 & WI17CSS != -3|
+           STATUS18 == 0 & WI18CSS != -3 |
+           STATUS19 == 0 & WI19CSS != -3 |
+           STATUS20 == 0 & WI20CSS!= -3 |
+           STATUS21 == 0 & WI21CSS != -3)
+
+
+
+#WI$$CSS: SHPI-SHPII-SHPIII-(SHPIV as of 2020) combined, cross-sectional individual weight keeping sample size, for year $$
+
+
+
+# 1) Rename the variable
+
+Data_17_21V2 <- Data_17_21V2 %>%
+  rename(old_CSSW17 = WI17CSS, 
+         old_CSSW18 = WI18CSS, 
+         old_CSSW19 = WI19CSS, 
+         old_CSSW20 = WI20CSS, 
+         old_CSSW21 = WI21CSS)
+Data_17_21V2 %>% filter (old_CSSW17 > 0) %>% tabyl(STATUS17) %>% adorn_totals("row") #899
+Data_17_21V2 %>% filter (old_CSSW18 > 0) %>% tabyl(STATUS18) %>% adorn_totals("row") #894
+Data_17_21V2 %>% filter (old_CSSW19 > 0) %>% tabyl(STATUS19) %>% adorn_totals("row") # 794
+Data_17_21V2 %>% filter (old_CSSW20 > 0) %>% tabyl(STATUS20) %>% adorn_totals("row") # 1604
+Data_17_21V2 %>% filter (old_CSSW21 > 0) %>% tabyl(STATUS21) %>% adorn_totals("row") # 1237       
+
+
+Data_17_21V2 %>% filter (STATUS21==0) %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) # 1,253
+Data_17_21V2 %>% filter (STATUS21==0) %>%filter (old_CSSW21 > 0) %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) # 1,237
+Data_17_21V2 %>%   filter(STATUS21==0) %>% filter(old_CSSW21<0)
+
+# I still have some negative values in Data_17_21V2
+key_columns <- c("IDPERS")  
+Data_17_21V3 <- Data_17_21V2
+conditions_list <- map(17:21, ~filter(Data_17_21V3, !!sym(paste0("STATUS", .)) == 0 & !!sym(paste0("old_CSSW", .)) < 0))
+
+if (!is_empty(conditions_list)) {
+  combined_conditions <- reduce(conditions_list, union_all)
+  Data_17_21V3 <- anti_join(Data_17_21V3, combined_conditions, by = key_columns)
+}
+
+
+Data_17_21V3 %>% filter (STATUS21==0) %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) # 1,235
+Data_17_21V3 %>% filter (STATUS21==0) %>%filter (old_CSSW21 > 0) %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) # 1,235
+
+
+Data_17_21V3 %>% filter (old_CSSW17 > 0) %>% tabyl(STATUS17) %>% adorn_totals("row") #884
+Data_17_21V3 %>% filter (old_CSSW18 > 0) %>% tabyl(STATUS18) %>% adorn_totals("row") #878
+Data_17_21V3 %>% filter (old_CSSW19 > 0) %>% tabyl(STATUS19) %>% adorn_totals("row") # 782
+Data_17_21V3 %>% filter (old_CSSW20 > 0) %>% tabyl(STATUS20) %>% adorn_totals("row") # 1596
+Data_17_21V3 %>% filter (old_CSSW21 > 0) %>% tabyl(STATUS21) %>% adorn_totals("row") # 1235
+
+
+# 2) Calculate the sum of the old weights for the subsample
+Data_17_21V3 %>% 
+  filter(STATUS17 == 0) %>% 
+  summarise(sum(old_CSSW17)) # 976.152
+Data_17_21V3 %>% 
+  filter(STATUS18 == 0) %>% 
+  summarise(sum(old_CSSW18)) # 1011.525
+Data_17_21V3 %>% 
+  filter(STATUS19 == 0) %>%
+  summarise(sum(old_CSSW19)) # 781.597
+Data_17_21V3 %>% 
+  filter(STATUS20 == 0) %>% 
+  summarise(sum(old_CSSW20)) # 1604.644
+Data_17_21V3 %>% 
+  filter(STATUS21 == 0) %>% 
+  summarise(sum(old_CSSW21)) # 1135.508
+
+# 3) Define the years and corresponding sample sizes
+years <- c("17","18", "19", "20", "21")
+sample_sizes <- c(884, 878, 782, 1596, 1235)
+sum_old_weights <- c(976.152, 1011.525, 781.597, 1604.644, 1135.508)
+
+# 4) Create a new column for each year using a for loop
+for (i in 1:length(years)) {
+  Data_17_21V3 <- Data_17_21V3 %>%
+    mutate(!!paste0("new_weight_", years[i]) := ifelse(!!sym(paste0("old_CSSW", years[i])) > 0, !!sym(paste0("old_CSSW", years[i])) / sum_old_weights[i] * sample_sizes[i], NA))
+}
+
+# Verification à la main
+
+# 2017 IDPERS 39103
+Data_17_21V3 %>% filter(IDPERS == 39103 ) %>% tabyl (old_CSSW17)
+Data_17_21V3 %>% filter(IDPERS == 39103 ) %>% tabyl (new_weight_17) 
+
+dim(Data_17_21V3)#2544 3547
+
+write_xlsx(Data_17_21V3, path = "C:/Users/.../Created datasets/Data_17_21_long_W.xlsx")
+
+
+### Creating a single table with all participation rates by age
+
+table_p17 <- Data_17_21V3 %>%
+  filter(!is.na(AGE17)) %>%
+  group_by(AGE17) %>%
+  summarise(count_2017 = n()) %>%
+  rename(AGE = AGE17) %>%
+  mutate(percentage_2017 = sprintf("%d (%.3f%%)", count_2017, count_2017 / sum(count_2017) * 100))
+
+table_p18 <- Data_17_21V3 %>%
+  filter(!is.na(AGE18)) %>%
+  group_by(AGE18) %>%
+  summarise(count_2018 = n()) %>%
+  rename(AGE = AGE18) %>%
+  mutate(percentage_2018 = sprintf("%d (%.3f%%)", count_2018, count_2018 / sum(count_2018) * 100))
+
+table_p19 <- Data_17_21V3 %>%
+  filter(!is.na(AGE19)) %>%
+  group_by(AGE19) %>%
+  summarise(count_2019 = n()) %>%
+  rename(AGE = AGE19) %>%
+  mutate(percentage_2019 = sprintf("%d (%.3f%%)", count_2019, count_2019 / sum(count_2019) * 100))
+
+table_p20 <- Data_17_21V3 %>%
+  filter(!is.na(AGE20)) %>%
+  group_by(AGE20) %>%
+  summarise(count_2020 = n()) %>%
+  rename(AGE = AGE20) %>%
+  mutate(percentage_2020 = sprintf("%d (%.3f%%)", count_2020, count_2020 / sum(count_2020) * 100))
+
+table_p21 <- Data_17_21V3 %>%
+  filter(!is.na(AGE21)) %>%
+  group_by(AGE21) %>%
+  summarise(count_2021 = n()) %>%
+  rename(AGE = AGE21) %>%
+  mutate(percentage_2021 = sprintf("%d (%.3f%%)", count_2021, count_2021 / sum(count_2021) * 100))
+
+# Merge the tables together
+final_table_participation <- left_join(table_p17, table_p18, by = "AGE") %>%
+  left_join(table_p19, by = "AGE") %>%
+  left_join(table_p20, by = "AGE") %>%
+  left_join(table_p21, by = "AGE") %>%
+  rename(
+    `2017 n(%)` = percentage_2017,
+    `2018 n(%)` = percentage_2018,
+    `2019 n(%)` = percentage_2019,
+    `2020 n(%)` = percentage_2020,
+    `2021 n(%)` = percentage_2021
+  )
+
+
+
+
+
+##########################
+###### Sample 2017 #######
+##########################
+
+merged_EA_labels_17_21<-read_excel("C:/Users/.../Created datasets/Data_17_21_long_W.xlsx")
+
+columns_to_inspect <- c("P17MODES", "SEX17", "CIVSTA17", "P17E14", "NAT_1_17", "NAT_2_17","P17I01", "PERMIT17", "P17D29", "PLINGU17", "P17D161", "OCCUPA17", "EDUCAT17", "P17C01", "CANTON17", "COM2_17", "P17P10")
+column_classes <- sapply(merged_EA_labels_17_21[, columns_to_inspect], class)
+print(column_classes)
+
+merged_EA_labels_17_21 <- merged_EA_labels_17_21 %>% mutate_at(vars(columns_to_inspect), as.character)
+
+
+# recode_factor variable names and values labels
+merged_EA_labels_17_21 <- merged_EA_labels_17_21 %>%
+  rename(
+    Mode_of_Data_Collection_17 = P17MODES,
+    Gender_17 = SEX17,
+    Age_17 = AGE17,
+    Civil_Status_17 = CIVSTA17,
+    First_Nationality_17 = NAT_1_17,
+    Second_Nationality_17 = NAT_2_17, 
+    Residence_Permit_17 = PERMIT17,
+    Partner_17 = P17D29,
+    Interview_language_17 = PLINGU17,
+    Swiss_Since_Birth_17 = P17D161,
+    Occupation_17 = OCCUPA17,
+    Education_Level_17 = EDUCAT17,
+    Health_Status_17 = P17C01,
+    Canton_of_Residence_17 = CANTON17,
+    Community_Typology_17 = COM2_17, 
+    Finan_satisfaction_17= P17I01,
+    Political_position_17 = P17P10,
+    Currently_Training_17 = P17E14,
+    
+  ) %>%
+  mutate(
+    Mode_of_Data_Collection_17 = recode_factor(Mode_of_Data_Collection_17,
+                                               '1' = 'CATI',
+                                               '2' = 'CAPI',
+                                               '3' = 'CAWI',
+                                               '4' = 'PAPI', 
+                                               other = NA_character_),
+    Gender_17 = recode_factor(Gender_17,
+                              '1' = 'Man',
+                              '2' = 'Woman', 
+                              .default =NA_character_),
+    Interview_language_17 = recode_factor(Interview_language_17, 
+                                          '1' = 'French',
+                                          '2' = 'German',
+                                          '3' = 'Italian', 
+                                          .default =NA_character_),
+    Civil_Status_17 = recode_factor(Civil_Status_17,
+                                    '1' = 'Single, Never Married',
+                                    '2' = 'Married',
+                                    '3' = 'Separated',
+                                    '4' = 'Divorced',
+                                    '5' = 'Widower/Widow',
+                                    '6' = 'Registered Partnership',
+                                    '7' = 'Dissolved Partnership', 
+                                    .default =NA_character_),
+    First_Nationality_17 = recode_factor(First_Nationality_17,
+                                         '-8' = 'Other Error',
+                                         '-7' = 'Filter Error',
+                                         '-3' = 'Inapplicable',
+                                         '-2' = 'No Answer',
+                                         '-1' = 'Does Not Know',
+                                         '8100' = 'Switzerland',
+                                         .default = 'Other'),
+    Second_Nationality_17 = recode_factor(Second_Nationality_17,
+                                          '-8' = 'Other Error',
+                                          '-7' = 'Filter Error',
+                                          '-3' = 'Inapplicable',
+                                          '-2' = 'No Answer',
+                                          '-1' = 'Does Not Know',
+                                          '8100' = 'Switzerland',
+                                          .default = 'Other'),
+    Residence_Permit_17 = recode_factor(Residence_Permit_17,
+                                        '-3' = 'Inapplicable',
+                                        '1' = 'Residential Permit C',
+                                        '2' = 'Annual Permit B',
+                                        '3' = 'Seasonal Permit A',
+                                        '4' = 'Diplomat or International Status',
+                                        '5' = 'Refugee or Applicant for Refuge',
+                                        '6' = 'Short-term Permit L/B (max.18 months)',
+                                        '7' = 'Other', 
+                                        .default =NA_character_),
+    Finan_satisfaction_17 = recode_factor(Finan_satisfaction_17, 
+                                          '0' = '0',
+                                          '1' = '1',
+                                          '2' = '2',
+                                          '3' = '3',
+                                          '4' = '4',
+                                          '5' = '5',
+                                          '6' = '6',
+                                          '7' = '7',
+                                          '8' = '8',
+                                          '9' = '9',
+                                          '10' = '10', 
+                                          .default = NA_character_),
+    Partner_17 = recode_factor(Partner_17,
+                               '1' = 'Yes, Living Together',
+                               '2' = 'Yes, But Not Living Together',
+                               '3' = 'No', 
+                               .default =NA_character_),
+    Swiss_Since_Birth_17 = recode_factor(Swiss_Since_Birth_17,
+                                         '-3' = 'Inapplicable',
+                                         '-1' = 'Does Not Know',
+                                         '1' = 'Yes',
+                                         '2' = 'No', 
+                                         .default =NA_character_),
+    Occupation_17 = recode_factor(Occupation_17,
+                                  '1' = 'Full-time Paid Work (Min 37 hrs weekly)',
+                                  '2' = 'Part-time Paid Work (5-36 hrs weekly)',
+                                  '3' = 'Part-time Paid Work (1 - 4 hrs weekly)',
+                                  '4' = 'In School, Training (Apprentice, Pupil, Student)',
+                                  '5' = 'Work in the Family Company',
+                                  '6' = 'Work in Protected Atelier (for Handicapped Persons)',
+                                  '7' = 'Child, Woman, Man at Home (Age Max 64/65 Years Old)',
+                                  '8' = 'Retired Person (Old-age)',
+                                  '9' = 'Other Retired Persons (Invalidity, etc.)',
+                                  '10' = 'Unemployed',
+                                  '11' = 'Other Situation, Further Education, Non-paid Leave', 
+                                  .default =NA_character_),
+    Currently_Training_17 = recode_factor(Currently_Training_17, 
+                                          '1' = 'Yes',
+                                          '2' = 'No', 
+                                          .default = NA_character_),     
+    Education_Level_17 = recode_factor(Education_Level_17,
+                                       '-6' = 'Specialized School for Handicapped',
+                                       '-5' = 'Pre-obligatory Schooling',
+                                       '-4' = 'Not Yet School Age',
+                                       '0' = 'Incomplete Compulsory School',
+                                       '1' = 'Compulsory School, Elementary Vocational Training',
+                                       '2' = 'Domestic Science Course, 1 Year School of Commerce',
+                                       '3' = 'General Training School',
+                                       '4' = 'Apprenticeship (CFC, EFZ)',
+                                       '5' = 'Full-time Vocational School',
+                                       '6' = 'Bachelor/Maturity',
+                                       '7' = 'Vocational High School with Master Certificate, Federal Certificate',
+                                       '8' = 'Technical or Vocational School',
+                                       '9' = 'Vocational High School ETS, HTL, etc.',
+                                       '10' = 'University, Academic High School, HEP, PH, HES, FH', 
+                                       .default =NA_character_),
+    Health_Status_17 = recode_factor(Health_Status_17,
+                                     '1' = 'Very Well',
+                                     '2' = 'Well',
+                                     '3' = 'So, So (Average)',
+                                     '4' = 'Not Very Well',
+                                     '5' = 'Not Well at All', 
+                                     .default =NA_character_),
+    Canton_of_Residence_17 = recode_factor(Canton_of_Residence_17,
+                                           '1' = 'AG Argovia',
+                                           '2' = 'AI Appenzell Inner-Rhodes',
+                                           '3' = 'AR Appenzell Outer-Rhodes',
+                                           '4' = 'BE Berne',
+                                           '5' = 'BS Basle-Town',
+                                           '6' = 'BL Basle-Country',
+                                           '7' = 'FR Fribourg',
+                                           '8' = 'GE Geneva',
+                                           '9' = 'GL Glarus',
+                                           '10' = 'GR Grisons',
+                                           '11' = 'JU Jura',
+                                           '12' = 'LU Lucerne',
+                                           '13' = 'NE Neuchatel',
+                                           '14' = 'NW Nidwalden',
+                                           '15' = 'OW Obwalden',
+                                           '16' = 'SG St. Gall',
+                                           '17' = 'SH Schaffhausen',
+                                           '18' = 'SO Solothurn',
+                                           '19' = 'SZ Schwyz',
+                                           '20' = 'TG Thurgovia',
+                                           '21' = 'TI Ticino',
+                                           '22' = 'UR Uri',
+                                           '23' = 'VD Vaud',
+                                           '24' = 'VS Valais',
+                                           '25' = 'ZG Zug',
+                                           '26' = 'ZH Zurich', 
+                                           .default =NA_character_),
+    Community_Typology_17 = recode_factor(Community_Typology_17,
+                                          '1' = 'Centres',
+                                          '2' = 'Suburban Communes',
+                                          '3' = 'Wealthy Communes',
+                                          '4' = 'Peripheral Urban Communes',
+                                          '5' = 'Tourist Communes',
+                                          '6' = 'Industrial and Tertiary Sector Communes',
+                                          '7' = 'Rural Commuter Communes',
+                                          '8' = 'Mixed Agricultural Communes',
+                                          '9' = 'Peripheral Agricultural Communes', 
+                                          .default =NA_character_), 
+    Political_position_17 = recode_factor( Political_position_17, 
+                                           '0' = '0',
+                                           '1' = '1',
+                                           '2' = '2',
+                                           '3' = '3',
+                                           '4' = '4',
+                                           '5' = '5',
+                                           '6' = '6',
+                                           '7' = '7',
+                                           '8' = '8',
+                                           '9' = '9',
+                                           '10' = '10', 
+                                           .default = NA_character_)
+  )
+
+
+######################################
+###### Sample description 2018 #######
+######################################
+
+columns_to_inspect <- c("P18MODES", "SEX18", "CIVSTA18", "P18E14", "NAT_1_18", "NAT_2_18","P18I01", "PERMIT18", "P18D29", "PLINGU18", "P18D161", "OCCUPA18", "EDUCAT18", "P18C01", "CANTON18", "COM2_18", "P18P10")
+column_classes <- sapply(merged_EA_labels_17_21[, columns_to_inspect], class)
+print(column_classes)
+
+merged_EA_labels_17_21 <- merged_EA_labels_17_21 %>% mutate_at(vars(columns_to_inspect), as.character)
+
+
+# Recode variable names and values labels
+merged_EA_labels_17_21 <- merged_EA_labels_17_21 %>%
+  rename(
+    Mode_of_Data_Collection_18 = P18MODES,
+    Gender_18 = SEX18,
+    Age_18 = AGE18,
+    Civil_Status_18 = CIVSTA18,
+    First_Nationality_18 = NAT_1_18,
+    Second_Nationality_18 = NAT_2_18, 
+    Residence_Permit_18 = PERMIT18,
+    Partner_18 = P18D29,
+    Interview_language_18 = PLINGU18,
+    Swiss_Since_Birth_18 = P18D161,
+    Occupation_18 = OCCUPA18,
+    Education_Level_18 = EDUCAT18,
+    Health_Status_18 = P18C01,
+    Canton_of_Residence_18 = CANTON18,
+    Community_Typology_18 = COM2_18, 
+    Finan_satisfaction_18= P18I01,
+    Political_position_18 = P18P10,
+    Currently_Training_18 = P18E14,
+    
+  ) %>%
+  mutate(
+    Mode_of_Data_Collection_18 = recode_factor(Mode_of_Data_Collection_18,
+                                               '1' = 'CATI',
+                                               '2' = 'CAPI',
+                                               '3' = 'CAWI',
+                                               '4' = 'PAPI', 
+                                               .default =NA_character_),
+    Gender_18 = recode_factor(Gender_18,
+                              '1' = 'Man',
+                              '2' = 'Woman', 
+                              .default =NA_character_),
+    Interview_language_18 = recode_factor(Interview_language_18, 
+                                          '1' = 'French',
+                                          '2' = 'German',
+                                          '3' = 'Italian', 
+                                          .default =NA_character_),
+    Civil_Status_18 = recode_factor(Civil_Status_18,
+                                    '1' = 'Single, Never Married',
+                                    '2' = 'Married',
+                                    '3' = 'Separated',
+                                    '4' = 'Divorced',
+                                    '5' = 'Widower/Widow',
+                                    '6' = 'Registered Partnership',
+                                    '7' = 'Dissolved Partnership', 
+                                    .default =NA_character_),
+    First_Nationality_18 = recode_factor(First_Nationality_18,
+                                         '-8' = 'Other Error',
+                                         '-7' = 'Filter Error',
+                                         '-3' = 'Inapplicable',
+                                         '-2' = 'No Answer',
+                                         '-1' = 'Does Not Know',
+                                         '8100' = 'Switzerland',
+                                         .default = 'Other'),
+    Second_Nationality_18 = recode_factor(Second_Nationality_18,
+                                          '-8' = 'Other Error',
+                                          '-7' = 'Filter Error',
+                                          '-3' = 'Inapplicable',
+                                          '-2' = 'No Answer',
+                                          '-1' = 'Does Not Know',
+                                          '8100' = 'Switzerland',
+                                          .default = 'Other'),
+    Residence_Permit_18 = recode_factor(Residence_Permit_18,
+                                        '-3' = 'Inapplicable',
+                                        '1' = 'Residential Permit C',
+                                        '2' = 'Annual Permit B',
+                                        '3' = 'Seasonal Permit A',
+                                        '4' = 'Diplomat or International Status',
+                                        '5' = 'Refugee or Applicant for Refuge',
+                                        '6' = 'Short-term Permit L/B (max.18 months)',
+                                        '7' = 'Other', 
+                                        .default =NA_character_),
+    Finan_satisfaction_18 = recode_factor(Finan_satisfaction_18, 
+                                          '0' = '0',
+                                          '1' = '1',
+                                          '2' = '2',
+                                          '3' = '3',
+                                          '4' = '4',
+                                          '5' = '5',
+                                          '6' = '6',
+                                          '7' = '7',
+                                          '8' = '8',
+                                          '9' = '9',
+                                          '10' = '10', 
+                                          .default = NA_character_),
+    Partner_18 = recode_factor(Partner_18,
+                               '1' = 'Yes, Living Together',
+                               '2' = 'Yes, But Not Living Together',
+                               '3' = 'No', 
+                               .default =NA_character_),
+    Swiss_Since_Birth_18 = recode_factor(Swiss_Since_Birth_18,
+                                         '-3' = 'Inapplicable',
+                                         '-1' = 'Does Not Know',
+                                         '1' = 'Yes',
+                                         '2' = 'No', 
+                                         .default =NA_character_),
+    Occupation_18 = recode_factor(Occupation_18,
+                                  '1' = 'Full-time Paid Work (Min 37 hrs weekly)',
+                                  '2' = 'Part-time Paid Work (5-36 hrs weekly)',
+                                  '3' = 'Part-time Paid Work (1 - 4 hrs weekly)',
+                                  '4' = 'In School, Training (Apprentice, Pupil, Student)',
+                                  '5' = 'Work in the Family Company',
+                                  '6' = 'Work in Protected Atelier (for Handicapped Persons)',
+                                  '7' = 'Child, Woman, Man at Home (Age Max 64/65 Years Old)',
+                                  '8' = 'Retired Person (Old-age)',
+                                  '9' = 'Other Retired Persons (Invalidity, etc.)',
+                                  '10' = 'Unemployed',
+                                  '11' = 'Other Situation, Further Education, Non-paid Leave', 
+                                  .default =NA_character_),
+    Currently_Training_18 = recode_factor(Currently_Training_18, 
+                                          '1' = 'Yes',
+                                          '2' = 'No', 
+                                          .default = NA_character_),     
+    Education_Level_18 = recode_factor(Education_Level_18,
+                                       '-6' = 'Specialized School for Handicapped',
+                                       '-5' = 'Pre-obligatory Schooling',
+                                       '-4' = 'Not Yet School Age',
+                                       '0' = 'Incomplete Compulsory School',
+                                       '1' = 'Compulsory School, Elementary Vocational Training',
+                                       '2' = 'Domestic Science Course, 1 Year School of Commerce',
+                                       '3' = 'General Training School',
+                                       '4' = 'Apprenticeship (CFC, EFZ)',
+                                       '5' = 'Full-time Vocational School',
+                                       '6' = 'Bachelor/Maturity',
+                                       '7' = 'Vocational High School with Master Certificate, Federal Certificate',
+                                       '8' = 'Technical or Vocational School',
+                                       '9' = 'Vocational High School ETS, HTL, etc.',
+                                       '10' = 'University, Academic High School, HEP, PH, HES, FH', 
+                                       .default =NA_character_),
+    Health_Status_18 = recode_factor(Health_Status_18,
+                                     '1' = 'Very Well',
+                                     '2' = 'Well',
+                                     '3' = 'So, So (Average)',
+                                     '4' = 'Not Very Well',
+                                     '5' = 'Not Well at All', 
+                                     .default =NA_character_),
+    Canton_of_Residence_18 = recode_factor(Canton_of_Residence_18,
+                                           '1' = 'AG Argovia',
+                                           '2' = 'AI Appenzell Inner-Rhodes',
+                                           '3' = 'AR Appenzell Outer-Rhodes',
+                                           '4' = 'BE Berne',
+                                           '5' = 'BS Basle-Town',
+                                           '6' = 'BL Basle-Country',
+                                           '7' = 'FR Fribourg',
+                                           '8' = 'GE Geneva',
+                                           '9' = 'GL Glarus',
+                                           '10' = 'GR Grisons',
+                                           '11' = 'JU Jura',
+                                           '12' = 'LU Lucerne',
+                                           '13' = 'NE Neuchatel',
+                                           '14' = 'NW Nidwalden',
+                                           '15' = 'OW Obwalden',
+                                           '16' = 'SG St. Gall',
+                                           '17' = 'SH Schaffhausen',
+                                           '18' = 'SO Solothurn',
+                                           '19' = 'SZ Schwyz',
+                                           '20' = 'TG Thurgovia',
+                                           '21' = 'TI Ticino',
+                                           '22' = 'UR Uri',
+                                           '23' = 'VD Vaud',
+                                           '24' = 'VS Valais',
+                                           '25' = 'ZG Zug',
+                                           '26' = 'ZH Zurich', 
+                                           .default =NA_character_),
+    Community_Typology_18 = recode_factor(Community_Typology_18,
+                                          '1' = 'Centres',
+                                          '2' = 'Suburban Communes',
+                                          '3' = 'Wealthy Communes',
+                                          '4' = 'Peripheral Urban Communes',
+                                          '5' = 'Tourist Communes',
+                                          '6' = 'Industrial and Tertiary Sector Communes',
+                                          '7' = 'Rural Commuter Communes',
+                                          '8' = 'Mixed Agricultural Communes',
+                                          '9' = 'Peripheral Agricultural Communes', 
+                                          .default =NA_character_), 
+    Political_position_18 = recode_factor( Political_position_18, 
+                                           '0' = '0',
+                                           '1' = '1',
+                                           '2' = '2',
+                                           '3' = '3',
+                                           '4' = '4',
+                                           '5' = '5',
+                                           '6' = '6',
+                                           '7' = '7',
+                                           '8' = '8',
+                                           '9' = '9',
+                                           '10' = '10', 
+                                           .default = NA_character_)
+  )
+
+
+
+##########################
+###### Sample 2019 #######
+##########################
+
+columns_to_inspect <- c("P19MODES", "SEX19", "CIVSTA19", "P19E14", "NAT_1_19", "NAT_2_19","P19I01", "PERMIT19", "P19D29", "PLINGU19", "P19D161", "OCCUPA19", "EDUCAT19", "P19C01", "CANTON19", "COM2_19", "P19P10")
+column_classes <- sapply(merged_EA_labels_17_21[, columns_to_inspect], class)
+print(column_classes)
+
+merged_EA_labels_17_21 <- merged_EA_labels_17_21 %>% mutate_at(vars(columns_to_inspect), as.character)
+
+# Recode variable names and values labels
+merged_EA_labels_17_21 <- merged_EA_labels_17_21 %>%
+  rename(
+    Mode_of_Data_Collection_19 = P19MODES,
+    Gender_19 = SEX19,
+    Age_19 = AGE19,
+    Civil_Status_19 = CIVSTA19,
+    First_Nationality_19 = NAT_1_19,
+    Second_Nationality_19 = NAT_2_19, 
+    Residence_Permit_19 = PERMIT19,
+    Partner_19 = P19D29,
+    Interview_language_19 = PLINGU19,
+    Swiss_Since_Birth_19 = P19D161,
+    Occupation_19 = OCCUPA19,
+    Education_Level_19 = EDUCAT19,
+    Health_Status_19 = P19C01,
+    Canton_of_Residence_19 = CANTON19,
+    Community_Typology_19 = COM2_19, 
+    Finan_satisfaction_19= P19I01,
+    Political_position_19 = P19P10,
+    Currently_Training_19 = P19E14,
+    
+  ) %>%
+  mutate(
+    Mode_of_Data_Collection_19 = recode_factor(Mode_of_Data_Collection_19,
+                                               '1' = 'CATI',
+                                               '2' = 'CAPI',
+                                               '3' = 'CAWI',
+                                               '4' = 'PAPI', 
+                                               .default =NA_character_),
+    Gender_19 = recode_factor(Gender_19,
+                              '1' = 'Man',
+                              '2' = 'Woman', 
+                              .default =NA_character_),
+    Interview_language_19 = recode_factor(Interview_language_19, 
+                                          '1' = 'French',
+                                          '2' = 'German',
+                                          '3' = 'Italian', 
+                                          .default =NA_character_),
+    Civil_Status_19 = recode_factor(Civil_Status_19,
+                                    '1' = 'Single, Never Married',
+                                    '2' = 'Married',
+                                    '3' = 'Separated',
+                                    '4' = 'Divorced',
+                                    '5' = 'Widower/Widow',
+                                    '6' = 'Registered Partnership',
+                                    '7' = 'Dissolved Partnership', 
+                                    .default =NA_character_),
+    First_Nationality_19 = recode_factor(First_Nationality_19,
+                                         '-8' = 'Other Error',
+                                         '-7' = 'Filter Error',
+                                         '-3' = 'Inapplicable',
+                                         '-2' = 'No Answer',
+                                         '-1' = 'Does Not Know',
+                                         '8100' = 'Switzerland',
+                                         .default = 'Other'),
+    Second_Nationality_19 = recode_factor(Second_Nationality_19,
+                                          '-8' = 'Other Error',
+                                          '-7' = 'Filter Error',
+                                          '-3' = 'Inapplicable',
+                                          '-2' = 'No Answer',
+                                          '-1' = 'Does Not Know',
+                                          '8100' = 'Switzerland',
+                                          .default = 'Other'),
+    Residence_Permit_19 = recode_factor(Residence_Permit_19,
+                                        '-3' = 'Inapplicable',
+                                        '1' = 'Residential Permit C',
+                                        '2' = 'Annual Permit B',
+                                        '3' = 'Seasonal Permit A',
+                                        '4' = 'Diplomat or International Status',
+                                        '5' = 'Refugee or Applicant for Refuge',
+                                        '6' = 'Short-term Permit L/B (max.19 months)',
+                                        '7' = 'Other', 
+                                        .default =NA_character_),
+    Finan_satisfaction_19 = recode_factor(Finan_satisfaction_19, 
+                                          '0' = '0',
+                                          '1' = '1',
+                                          '2' = '2',
+                                          '3' = '3',
+                                          '4' = '4',
+                                          '5' = '5',
+                                          '6' = '6',
+                                          '7' = '7',
+                                          '8' = '8',
+                                          '9' = '9',
+                                          '10' = '10', 
+                                          .default = NA_character_),
+    Partner_19 = recode_factor(Partner_19,
+                               '1' = 'Yes, Living Together',
+                               '2' = 'Yes, But Not Living Together',
+                               '3' = 'No', 
+                               .default =NA_character_),
+    Swiss_Since_Birth_19 = recode_factor(Swiss_Since_Birth_19,
+                                         '-3' = 'Inapplicable',
+                                         '-1' = 'Does Not Know',
+                                         '1' = 'Yes',
+                                         '2' = 'No', 
+                                         .default =NA_character_),
+    Occupation_19 = recode_factor(Occupation_19,
+                                  '1' = 'Full-time Paid Work (Min 37 hrs weekly)',
+                                  '2' = 'Part-time Paid Work (5-36 hrs weekly)',
+                                  '3' = 'Part-time Paid Work (1 - 4 hrs weekly)',
+                                  '4' = 'In School, Training (Apprentice, Pupil, Student)',
+                                  '5' = 'Work in the Family Company',
+                                  '6' = 'Work in Protected Atelier (for Handicapped Persons)',
+                                  '7' = 'Child, Woman, Man at Home (Age Max 64/65 Years Old)',
+                                  '8' = 'Retired Person (Old-age)',
+                                  '9' = 'Other Retired Persons (Invalidity, etc.)',
+                                  '10' = 'Unemployed',
+                                  '11' = 'Other Situation, Further Education, Non-paid Leave', 
+                                  .default =NA_character_),
+    Currently_Training_19 = recode_factor(Currently_Training_19, 
+                                          '1' = 'Yes',
+                                          '2' = 'No', 
+                                          .default = NA_character_),     
+    Education_Level_19 = recode_factor(Education_Level_19,
+                                       '-6' = 'Specialized School for Handicapped',
+                                       '-5' = 'Pre-obligatory Schooling',
+                                       '-4' = 'Not Yet School Age',
+                                       '0' = 'Incomplete Compulsory School',
+                                       '1' = 'Compulsory School, Elementary Vocational Training',
+                                       '2' = 'Domestic Science Course, 1 Year School of Commerce',
+                                       '3' = 'General Training School',
+                                       '4' = 'Apprenticeship (CFC, EFZ)',
+                                       '5' = 'Full-time Vocational School',
+                                       '6' = 'Bachelor/Maturity',
+                                       '7' = 'Vocational High School with Master Certificate, Federal Certificate',
+                                       '8' = 'Technical or Vocational School',
+                                       '9' = 'Vocational High School ETS, HTL, etc.',
+                                       '10' = 'University, Academic High School, HEP, PH, HES, FH', 
+                                       .default =NA_character_),
+    Health_Status_19 = recode_factor(Health_Status_19,
+                                     '1' = 'Very Well',
+                                     '2' = 'Well',
+                                     '3' = 'So, So (Average)',
+                                     '4' = 'Not Very Well',
+                                     '5' = 'Not Well at All', 
+                                     .default =NA_character_),
+    Canton_of_Residence_19 = recode_factor(Canton_of_Residence_19,
+                                           '1' = 'AG Argovia',
+                                           '2' = 'AI Appenzell Inner-Rhodes',
+                                           '3' = 'AR Appenzell Outer-Rhodes',
+                                           '4' = 'BE Berne',
+                                           '5' = 'BS Basle-Town',
+                                           '6' = 'BL Basle-Country',
+                                           '7' = 'FR Fribourg',
+                                           '8' = 'GE Geneva',
+                                           '9' = 'GL Glarus',
+                                           '10' = 'GR Grisons',
+                                           '11' = 'JU Jura',
+                                           '12' = 'LU Lucerne',
+                                           '13' = 'NE Neuchatel',
+                                           '14' = 'NW Nidwalden',
+                                           '15' = 'OW Obwalden',
+                                           '16' = 'SG St. Gall',
+                                           '17' = 'SH Schaffhausen',
+                                           '18' = 'SO Solothurn',
+                                           '19' = 'SZ Schwyz',
+                                           '20' = 'TG Thurgovia',
+                                           '21' = 'TI Ticino',
+                                           '22' = 'UR Uri',
+                                           '23' = 'VD Vaud',
+                                           '24' = 'VS Valais',
+                                           '25' = 'ZG Zug',
+                                           '26' = 'ZH Zurich', 
+                                           .default =NA_character_),
+    Community_Typology_19 = recode_factor(Community_Typology_19,
+                                          '1' = 'Centres',
+                                          '2' = 'Suburban Communes',
+                                          '3' = 'Wealthy Communes',
+                                          '4' = 'Peripheral Urban Communes',
+                                          '5' = 'Tourist Communes',
+                                          '6' = 'Industrial and Tertiary Sector Communes',
+                                          '7' = 'Rural Commuter Communes',
+                                          '8' = 'Mixed Agricultural Communes',
+                                          '9' = 'Peripheral Agricultural Communes', 
+                                          .default =NA_character_), 
+    Political_position_19 = recode_factor( Political_position_19, 
+                                           '0' = '0',
+                                           '1' = '1',
+                                           '2' = '2',
+                                           '3' = '3',
+                                           '4' = '4',
+                                           '5' = '5',
+                                           '6' = '6',
+                                           '7' = '7',
+                                           '8' = '8',
+                                           '9' = '9',
+                                           '10' = '10', 
+                                           .default = NA_character_)
+  )
+
+
+
+##########################
+###### Sample 2020 #######
+##########################
+
+
+columns_to_inspect <- c("P20MODES", "SEX20", "CIVSTA20", "P20E14", "NAT_1_20", "NAT_2_20","P20I01", "PERMIT20", "P20D29", "PLINGU20", "P20D161", "OCCUPA20", "EDUCAT20", "P20C01", "CANTON20", "COM2_20", "P20P10")
+column_classes <- sapply(merged_EA_labels_17_21[, columns_to_inspect], class)
+print(column_classes)
+
+merged_EA_labels_17_21 <- merged_EA_labels_17_21 %>% mutate_at(vars(columns_to_inspect), as.character)
+
+
+# Recode variable names and values labels
+merged_EA_labels_17_21 <- merged_EA_labels_17_21 %>%
+  rename(
+    Mode_of_Data_Collection_20 = P20MODES,
+    Gender_20 = SEX20,
+    Age_20 = AGE20,
+    Civil_Status_20 = CIVSTA20,
+    First_Nationality_20 = NAT_1_20,
+    Second_Nationality_20 = NAT_2_20, 
+    Residence_Permit_20 = PERMIT20,
+    Partner_20 = P20D29,
+    Interview_language_20 = PLINGU20,
+    Swiss_Since_Birth_20 = P20D161,
+    Occupation_20 = OCCUPA20,
+    Education_Level_20 = EDUCAT20,
+    Health_Status_20 = P20C01,
+    Canton_of_Residence_20 = CANTON20,
+    Community_Typology_20 = COM2_20, 
+    Finan_satisfaction_20= P20I01,
+    Political_position_20 = P20P10,
+    Currently_Training_20 = P20E14,
+    
+  ) %>%
+  mutate(
+    Mode_of_Data_Collection_20 = recode_factor(Mode_of_Data_Collection_20,
+                                               '1' = 'CATI',
+                                               '2' = 'CAPI',
+                                               '3' = 'CAWI',
+                                               '4' = 'PAPI', 
+                                               .default =NA_character_),
+    Gender_20 = recode_factor(Gender_20,
+                              '1' = 'Man',
+                              '2' = 'Woman', 
+                              .default =NA_character_),
+    Interview_language_20 = recode_factor(Interview_language_20, 
+                                          '1' = 'French',
+                                          '2' = 'German',
+                                          '3' = 'Italian', 
+                                          .default =NA_character_),
+    Civil_Status_20 = recode_factor(Civil_Status_20,
+                                    '1' = 'Single, Never Married',
+                                    '2' = 'Married',
+                                    '3' = 'Separated',
+                                    '4' = 'Divorced',
+                                    '5' = 'Widower/Widow',
+                                    '6' = 'Registered Partnership',
+                                    '7' = 'Dissolved Partnership', 
+                                    .default =NA_character_),
+    First_Nationality_20 = recode_factor(First_Nationality_20,
+                                         '-8' = 'Other Error',
+                                         '-7' = 'Filter Error',
+                                         '-3' = 'Inapplicable',
+                                         '-2' = 'No Answer',
+                                         '-1' = 'Does Not Know',
+                                         '8100' = 'Switzerland',
+                                         .default = 'Other'),
+    Second_Nationality_20 = recode_factor(Second_Nationality_20,
+                                          '-8' = 'Other Error',
+                                          '-7' = 'Filter Error',
+                                          '-3' = 'Inapplicable',
+                                          '-2' = 'No Answer',
+                                          '-1' = 'Does Not Know',
+                                          '8100' = 'Switzerland',
+                                          .default = 'Other'),
+    Residence_Permit_20 = recode_factor(Residence_Permit_20,
+                                        '-3' = 'Inapplicable',
+                                        '1' = 'Residential Permit C',
+                                        '2' = 'Annual Permit B',
+                                        '3' = 'Seasonal Permit A',
+                                        '4' = 'Diplomat or International Status',
+                                        '5' = 'Refugee or Applicant for Refuge',
+                                        '6' = 'Short-term Permit L/B (max.20 months)',
+                                        '7' = 'Other', 
+                                        .default =NA_character_),
+    Finan_satisfaction_20 = recode_factor(Finan_satisfaction_20, 
+                                          '0' = '0',
+                                          '1' = '1',
+                                          '2' = '2',
+                                          '3' = '3',
+                                          '4' = '4',
+                                          '5' = '5',
+                                          '6' = '6',
+                                          '7' = '7',
+                                          '8' = '8',
+                                          '9' = '9',
+                                          '10' = '10', 
+                                          .default = NA_character_),
+    Partner_20 = recode_factor(Partner_20,
+                               '1' = 'Yes, Living Together',
+                               '2' = 'Yes, But Not Living Together',
+                               '3' = 'No', 
+                               .default =NA_character_),
+    Swiss_Since_Birth_20 = recode_factor(Swiss_Since_Birth_20,
+                                         '-3' = 'Inapplicable',
+                                         '-1' = 'Does Not Know',
+                                         '1' = 'Yes',
+                                         '2' = 'No', 
+                                         .default =NA_character_),
+    Occupation_20 = recode_factor(Occupation_20,
+                                  '1' = 'Full-time Paid Work (Min 37 hrs weekly)',
+                                  '2' = 'Part-time Paid Work (5-36 hrs weekly)',
+                                  '3' = 'Part-time Paid Work (1 - 4 hrs weekly)',
+                                  '4' = 'In School, Training (Apprentice, Pupil, Student)',
+                                  '5' = 'Work in the Family Company',
+                                  '6' = 'Work in Protected Atelier (for Handicapped Persons)',
+                                  '7' = 'Child, Woman, Man at Home (Age Max 64/65 Years Old)',
+                                  '8' = 'Retired Person (Old-age)',
+                                  '9' = 'Other Retired Persons (Invalidity, etc.)',
+                                  '10' = 'Unemployed',
+                                  '11' = 'Other Situation, Further Education, Non-paid Leave', 
+                                  .default =NA_character_),
+    Currently_Training_20 = recode_factor(Currently_Training_20, 
+                                          '1' = 'Yes',
+                                          '2' = 'No', 
+                                          .default = NA_character_),     
+    Education_Level_20 = recode_factor(Education_Level_20,
+                                       '-6' = 'Specialized School for Handicapped',
+                                       '-5' = 'Pre-obligatory Schooling',
+                                       '-4' = 'Not Yet School Age',
+                                       '0' = 'Incomplete Compulsory School',
+                                       '1' = 'Compulsory School, Elementary Vocational Training',
+                                       '2' = 'Domestic Science Course, 1 Year School of Commerce',
+                                       '3' = 'General Training School',
+                                       '4' = 'Apprenticeship (CFC, EFZ)',
+                                       '5' = 'Full-time Vocational School',
+                                       '6' = 'Bachelor/Maturity',
+                                       '7' = 'Vocational High School with Master Certificate, Federal Certificate',
+                                       '8' = 'Technical or Vocational School',
+                                       '9' = 'Vocational High School ETS, HTL, etc.',
+                                       '10' = 'University, Academic High School, HEP, PH, HES, FH', 
+                                       .default =NA_character_),
+    Health_Status_20 = recode_factor(Health_Status_20,
+                                     '1' = 'Very Well',
+                                     '2' = 'Well',
+                                     '3' = 'So, So (Average)',
+                                     '4' = 'Not Very Well',
+                                     '5' = 'Not Well at All', 
+                                     .default =NA_character_),
+    Canton_of_Residence_20 = recode_factor(Canton_of_Residence_20,
+                                           '1' = 'AG Argovia',
+                                           '2' = 'AI Appenzell Inner-Rhodes',
+                                           '3' = 'AR Appenzell Outer-Rhodes',
+                                           '4' = 'BE Berne',
+                                           '5' = 'BS Basle-Town',
+                                           '6' = 'BL Basle-Country',
+                                           '7' = 'FR Fribourg',
+                                           '8' = 'GE Geneva',
+                                           '9' = 'GL Glarus',
+                                           '10' = 'GR Grisons',
+                                           '11' = 'JU Jura',
+                                           '12' = 'LU Lucerne',
+                                           '13' = 'NE Neuchatel',
+                                           '14' = 'NW Nidwalden',
+                                           '15' = 'OW Obwalden',
+                                           '16' = 'SG St. Gall',
+                                           '17' = 'SH Schaffhausen',
+                                           '18' = 'SO Solothurn',
+                                           '19' = 'SZ Schwyz',
+                                           '20' = 'TG Thurgovia',
+                                           '21' = 'TI Ticino',
+                                           '22' = 'UR Uri',
+                                           '23' = 'VD Vaud',
+                                           '24' = 'VS Valais',
+                                           '25' = 'ZG Zug',
+                                           '26' = 'ZH Zurich', 
+                                           .default =NA_character_),
+    Community_Typology_20 = recode_factor(Community_Typology_20,
+                                          '1' = 'Centres',
+                                          '2' = 'Suburban Communes',
+                                          '3' = 'Wealthy Communes',
+                                          '4' = 'Peripheral Urban Communes',
+                                          '5' = 'Tourist Communes',
+                                          '6' = 'Industrial and Tertiary Sector Communes',
+                                          '7' = 'Rural Commuter Communes',
+                                          '8' = 'Mixed Agricultural Communes',
+                                          '9' = 'Peripheral Agricultural Communes', 
+                                          .default =NA_character_), 
+    Political_position_20 = recode_factor( Political_position_20, 
+                                           '0' = '0',
+                                           '1' = '1',
+                                           '2' = '2',
+                                           '3' = '3',
+                                           '4' = '4',
+                                           '5' = '5',
+                                           '6' = '6',
+                                           '7' = '7',
+                                           '8' = '8',
+                                           '9' = '9',
+                                           '10' = '10', 
+                                           .default = NA_character_)
+  )
+
+
+##########################
+###### Sample 2021 #######
+##########################
+
+columns_to_inspect <- c("P21MODES", "SEX21", "CIVSTA21", "P21E14", "NAT_1_21", "NAT_2_21","P21I01", "PERMIT21", "P21D29", "PLINGU21", "P21D161", "OCCUPA21", "EDUCAT21", "P21C01", "CANTON21", "COM2_21", "P21P10")
+column_classes <- sapply(merged_EA_labels_17_21[, columns_to_inspect], class)
+print(column_classes)
+
+merged_EA_labels_17_21 <- merged_EA_labels_17_21 %>% mutate_at(vars(columns_to_inspect), as.character)
+
+
+# recode_factor variable names and values labels
+merged_EA_labels_17_21 <- merged_EA_labels_17_21 %>%
+  rename(
+    Mode_of_Data_Collection_21 = P21MODES,
+    Gender_21 = SEX21,
+    Age_21 = AGE21,
+    Civil_Status_21 = CIVSTA21,
+    First_Nationality_21 = NAT_1_21,
+    Second_Nationality_21 = NAT_2_21, 
+    Residence_Permit_21 = PERMIT21,
+    Partner_21 = P21D29,
+    Interview_language_21 = PLINGU21,
+    Swiss_Since_Birth_21 = P21D161,
+    Occupation_21 = OCCUPA21,
+    Education_Level_21 = EDUCAT21,
+    Health_Status_21 = P21C01,
+    Canton_of_Residence_21 = CANTON21,
+    Community_Typology_21 = COM2_21, 
+    Finan_satisfaction_21= P21I01,
+    Political_position_21 = P21P10,
+    Currently_Training_21 = P21E14,
+    
+  ) %>%
+  mutate(
+    Mode_of_Data_Collection_21 = recode_factor(Mode_of_Data_Collection_21,
+                                               '1' = 'CATI',
+                                               '2' = 'CAPI',
+                                               '3' = 'CAWI',
+                                               '4' = 'PAPI', 
+                                               .default =NA_character_),
+    Gender_21 = recode_factor(Gender_21,
+                              '1' = 'Man',
+                              '2' = 'Woman', 
+                              .default =NA_character_),
+    Interview_language_21 = recode_factor(Interview_language_21, 
+                                          '1' = 'French',
+                                          '2' = 'German',
+                                          '3' = 'Italian', 
+                                          .default =NA_character_),
+    Civil_Status_21 = recode_factor(Civil_Status_21,
+                                    '1' = 'Single, Never Married',
+                                    '2' = 'Married',
+                                    '3' = 'Separated',
+                                    '4' = 'Divorced',
+                                    '5' = 'Widower/Widow',
+                                    '6' = 'Registered Partnership',
+                                    '7' = 'Dissolved Partnership', 
+                                    .default =NA_character_),
+    First_Nationality_21 = recode_factor(First_Nationality_21,
+                                         '-8' = 'Other Error',
+                                         '-7' = 'Filter Error',
+                                         '-3' = 'Inapplicable',
+                                         '-2' = 'No Answer',
+                                         '-1' = 'Does Not Know',
+                                         '8100' = 'Switzerland',
+                                         .default = 'Other'),
+    Second_Nationality_21 = recode_factor(Second_Nationality_21,
+                                          '-8' = 'Other Error',
+                                          '-7' = 'Filter Error',
+                                          '-3' = 'Inapplicable',
+                                          '-2' = 'No Answer',
+                                          '-1' = 'Does Not Know',
+                                          '8100' = 'Switzerland',
+                                          .default = 'Other'),
+    Residence_Permit_21 = recode_factor(Residence_Permit_21,
+                                        '-3' = 'Inapplicable',
+                                        '1' = 'Residential Permit C',
+                                        '2' = 'Annual Permit B',
+                                        '3' = 'Seasonal Permit A',
+                                        '4' = 'Diplomat or International Status',
+                                        '5' = 'Refugee or Applicant for Refuge',
+                                        '6' = 'Short-term Permit L/B (max.21 months)',
+                                        '7' = 'Other', 
+                                        .default =NA_character_),
+    Finan_satisfaction_21 = recode_factor(Finan_satisfaction_21, 
+                                          '0' = '0',
+                                          '1' = '1',
+                                          '2' = '2',
+                                          '3' = '3',
+                                          '4' = '4',
+                                          '5' = '5',
+                                          '6' = '6',
+                                          '7' = '7',
+                                          '8' = '8',
+                                          '9' = '9',
+                                          '10' = '10', 
+                                          .default = NA_character_),
+    Partner_21 = recode_factor(Partner_21,
+                               '1' = 'Yes, Living Together',
+                               '2' = 'Yes, But Not Living Together',
+                               '3' = 'No', 
+                               .default =NA_character_),
+    Swiss_Since_Birth_21 = recode_factor(Swiss_Since_Birth_21,
+                                         '-3' = 'Inapplicable',
+                                         '-1' = 'Does Not Know',
+                                         '1' = 'Yes',
+                                         '2' = 'No', 
+                                         .default =NA_character_),
+    Occupation_21 = recode_factor(Occupation_21,
+                                  '1' = 'Full-time Paid Work (Min 37 hrs weekly)',
+                                  '2' = 'Part-time Paid Work (5-36 hrs weekly)',
+                                  '3' = 'Part-time Paid Work (1 - 4 hrs weekly)',
+                                  '4' = 'In School, Training (Apprentice, Pupil, Student)',
+                                  '5' = 'Work in the Family Company',
+                                  '6' = 'Work in Protected Atelier (for Handicapped Persons)',
+                                  '7' = 'Child, Woman, Man at Home (Age Max 64/65 Years Old)',
+                                  '8' = 'Retired Person (Old-age)',
+                                  '9' = 'Other Retired Persons (Invalidity, etc.)',
+                                  '10' = 'Unemployed',
+                                  '11' = 'Other Situation, Further Education, Non-paid Leave', 
+                                  .default =NA_character_),
+    Currently_Training_21 = recode_factor(Currently_Training_21, 
+                                          '1' = 'Yes',
+                                          '2' = 'No', 
+                                          .default = NA_character_),     
+    Education_Level_21 = recode_factor(Education_Level_21,
+                                       '-6' = 'Specialized School for Handicapped',
+                                       '-5' = 'Pre-obligatory Schooling',
+                                       '-4' = 'Not Yet School Age',
+                                       '0' = 'Incomplete Compulsory School',
+                                       '1' = 'Compulsory School, Elementary Vocational Training',
+                                       '2' = 'Domestic Science Course, 1 Year School of Commerce',
+                                       '3' = 'General Training School',
+                                       '4' = 'Apprenticeship (CFC, EFZ)',
+                                       '5' = 'Full-time Vocational School',
+                                       '6' = 'Bachelor/Maturity',
+                                       '7' = 'Vocational High School with Master Certificate, Federal Certificate',
+                                       '8' = 'Technical or Vocational School',
+                                       '9' = 'Vocational High School ETS, HTL, etc.',
+                                       '10' = 'University, Academic High School, HEP, PH, HES, FH', 
+                                       .default =NA_character_),
+    Health_Status_21 = recode_factor(Health_Status_21,
+                                     '1' = 'Very Well',
+                                     '2' = 'Well',
+                                     '3' = 'So, So (Average)',
+                                     '4' = 'Not Very Well',
+                                     '5' = 'Not Well at All', 
+                                     .default =NA_character_),
+    Canton_of_Residence_21 = recode_factor(Canton_of_Residence_21,
+                                           '1' = 'AG Argovia',
+                                           '2' = 'AI Appenzell Inner-Rhodes',
+                                           '3' = 'AR Appenzell Outer-Rhodes',
+                                           '4' = 'BE Berne',
+                                           '5' = 'BS Basle-Town',
+                                           '6' = 'BL Basle-Country',
+                                           '7' = 'FR Fribourg',
+                                           '8' = 'GE Geneva',
+                                           '9' = 'GL Glarus',
+                                           '10' = 'GR Grisons',
+                                           '11' = 'JU Jura',
+                                           '12' = 'LU Lucerne',
+                                           '13' = 'NE Neuchatel',
+                                           '14' = 'NW Nidwalden',
+                                           '15' = 'OW Obwalden',
+                                           '16' = 'SG St. Gall',
+                                           '17' = 'SH Schaffhausen',
+                                           '18' = 'SO Solothurn',
+                                           '19' = 'SZ Schwyz',
+                                           '20' = 'TG Thurgovia',
+                                           '21' = 'TI Ticino',
+                                           '22' = 'UR Uri',
+                                           '23' = 'VD Vaud',
+                                           '24' = 'VS Valais',
+                                           '25' = 'ZG Zug',
+                                           '26' = 'ZH Zurich', 
+                                           .default =NA_character_),
+    Community_Typology_21 = recode_factor(Community_Typology_21,
+                                          '1' = 'Centres',
+                                          '2' = 'Suburban Communes',
+                                          '3' = 'Wealthy Communes',
+                                          '4' = 'Peripheral Urban Communes',
+                                          '5' = 'Tourist Communes',
+                                          '6' = 'Industrial and Tertiary Sector Communes',
+                                          '7' = 'Rural Commuter Communes',
+                                          '8' = 'Mixed Agricultural Communes',
+                                          '9' = 'Peripheral Agricultural Communes', 
+                                          .default =NA_character_), 
+    Political_position_21 = recode_factor( Political_position_21, 
+                                           '0' = '0',
+                                           '1' = '1',
+                                           '2' = '2',
+                                           '3' = '3',
+                                           '4' = '4',
+                                           '5' = '5',
+                                           '6' = '6',
+                                           '7' = '7',
+                                           '8' = '8',
+                                           '9' = '9',
+                                           '10' = '10', 
+                                           .default = NA_character_)
+  )
+
+
+SummaryStatData_17_21_wide <- merged_EA_labels_17_21
+
+SummaryStatData_17_21_wide %>%
+  dplyr::select(IDPERS) %>%
+  distinct() %>%
+  n_distinct() #2544
+
+# Select the columns with IDPERS and scores for different years
+selected_cols <- SummaryStatData_17_21_wide %>%
+  dplyr::select(IDPERS, starts_with("IDHOUS"), starts_with("STATUS"), ends_with("_17"), ends_with("_18"), ends_with("_19"), ends_with("_20"), ends_with("_21"))
+
+# Pivot the selected columns to long format
+pivoted_data <- selected_cols %>%
+  pivot_longer(cols = -IDPERS,
+               names_to = c(".value", "Year"),
+               names_pattern = "(.*)(17|18|19|20|21)$")
+
+pivoted_data %>%
+  dplyr::select(IDPERS) %>%
+  distinct() %>%
+  n_distinct() #2544
+
+SummaryStatData_17_21_long<-pivoted_data
+
+
+write_xlsx(SummaryStatData_17_21_long, path = "C:/Users/.../Created datasets/SummaryStatData_17_21_long.xlsx")
+write_xlsx(SummaryStatData_17_21_wide, path = "C:/Users/.../Created datasets/SummaryStatData_17_21_wide.xlsx")
+
+
+###############################################################
+####  Adjustment factors selection + standardizing data #######
+###############################################################
+SummaryStatData_17_21_long <-read_excel("C:/Users/.../Created datasets/SummaryStatData_17_21_long.xlsx")
+SummaryStatData_17_21_long %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) #2544  unique IDPERS answered
+SummaryStatData_17_21_long %>% filter(STATUS==0) %>% tabyl(Age_, Year) %>% adorn_totals("row")
+SummaryStatData_17_21_long %>% filter(STATUS==0)  %>% filter(is.na(new_weight_)) # 0
+
+SummaryStatData_17_21_long <- SummaryStatData_17_21_long %>% filter(!is.na(new_weight_))
+
+SummaryStatData_17_21_long %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) #2544  unique IDPERS answered
+
+SummaryStatData_17_21_long  %>% group_by(Year, Gender_) %>% 
+  summarise(sum_new_weight = sum(new_weight_),
+            min = min(new_weight_), 
+            max= max(new_weight_), 
+            n = n())
+
+# Age as continous
+SummaryStatData_17_21_long$Age_ <- as.numeric(SummaryStatData_17_21_long$Age_ )
+# Financial satisfaction as continous
+SummaryStatData_17_21_long$Finan_satisfaction_ <- as.numeric(SummaryStatData_17_21_long$Finan_satisfaction_ )
+# Political position as continuos 
+SummaryStatData_17_21_long$Political_position_ <- as.numeric(SummaryStatData_17_21_long$Political_position_ )
+
+# Year centration
+SummaryStatData_17_21_long <- SummaryStatData_17_21_long %>%
+  mutate(Year = case_when(
+    Year == 17 ~ 2017,
+    Year == 18 ~ 2018,
+    Year == 19 ~ 2019,
+    Year == 20 ~ 2020,
+    Year == 21 ~ 2021,
+    TRUE ~ NA_integer_
+  ))
+
+UnSS<-SummaryStatData_17_21_long %>%
+  tbl_summary(     
+    by = Year,                                               # stratify entire table by outcome
+    statistic = list(
+      all_continuous() ~ "{mean} ({sd})",               # stats and format for continuous columns
+      all_categorical() ~ "{n} ({p}%)"
+    ),  # stats and format for categorical columns
+    digits = all_continuous() ~ 1,                          # rounding for continuous columns
+    label = list(
+      Occupation_           ~ "Occupation",
+      Gender_               ~ "Gender",
+      Political_position_   ~ " Political position",
+      Mode_of_Data_Collection_  ~ "Data collection mode", 
+      Interview_language_ ~ "Interview language", 
+      Health_Status_ ~ " Health status" , 
+      Civil_Status_ ~ "Civil status",
+      Finan_satisfaction_ ~ "Financial satisfaction",
+      Canton_of_Residence_ ~ "Canton of residence",
+      Education_Level_       ~ "Education Level",
+      Currently_Training_    ~ "Currently training", 
+      Partner_              ~ "Partner", 
+      First_Nationality_    ~ "First nationality", 
+      Community_Typology_   ~ "Community Typology"
+    ),
+    missing_text = "Missing"
+  )
+
+########## Summary statistics code for weightened data #######
+
+# Create a survey design object
+Data_survey <- svydesign(ids = ~IDPERS, data = SummaryStatData_17_21_long, weights = ~new_weight_)
+
+WSS<-tbl_svysummary(Data_survey, by = Year, statistic = list(all_continuous() ~ "{mean} ({sd})"))
+summary(Data_survey)
+
+######## To see how many IDPERS share same IDHOUS #####
+SummaryStatData_17_21_long %>% distinct(IDHOUS, .keep_all = TRUE) %>%count (IDHOUS) #2,008  unique IDHOUS answered
+
+
+table_IDPERSbyIDHOUS<-SummaryStatData_17_21_long %>%
+  group_by(Year, IDHOUS) %>%
+  summarize(count_distinct_idpers = n_distinct(IDPERS)) %>%
+  ungroup() %>%
+  group_by(Year, count_distinct_idpers) %>%
+  summarize(count_of_houses = n()) %>%
+  rename(size_of_house = count_distinct_idpers, count_of_houses = count_of_houses)
+
+
+ggplot(table_IDPERSbyIDHOUS, aes(x = Year, y = count_of_houses, fill = factor(size_of_house))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label = count_of_houses), position = position_dodge(width = 0.9), vjust = -0.5, size = 3) +
+  labs(title = "Count of Houses by Year and Size", x = "Year", y = "Count of Houses", fill = "Size of House") +
+  theme_minimal()
+
+### more than 1 persom###
+
+table_IDPERSbyIDHOUS <- table_IDPERSbyIDHOUS %>%
+  mutate(size_category = ifelse(size_of_house == 1, "1 individual", "2 and more individuals"))
+
+table_IDPERSbyIDHOUS <- table_IDPERSbyIDHOUS %>%
+  group_by(size_category) %>%
+  summarize(count_of_houses = sum(count_of_houses)) %>%
+  ungroup() %>%
+  mutate(percentage = count_of_houses / sum(count_of_houses) * 100)
+
+
+# over all years
+ggplot(table_IDPERSbyIDHOUS, aes(x = size_category, y = percentage, fill = size_category)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = paste0(round(percentage), "%")), position = position_stack(vjust = 0.5), size = 6) +
+  labs(title = "Percentage of Houses by Size Category (All years)", x = "Size Category", y = "Percentage", fill = "Size Category") +
+  theme_minimal()
+
+
+##########################################
+###### Savig created data to my PC #######
+##########################################
+
+write_xlsx(HH_P_EA_17, path = "C:/Users/.../Created datasets/Emerging adults (HH+P) 2017.xlsx")
+write_xlsx(HH_P_EA_18, path = "C:/Users/.../Created datasets/Emerging adults (HH+P) 2018.xlsx")
+write_xlsx(HH_P_EA_19, path = "C:/Users/.../Created datasets/Emerging adults (HH+P) 2019.xlsx")
+write_xlsx(HH_P_EA_20, path = "C:/Users/.../Created datasets/Emerging adults (HH+P) 2020.xlsx")
+write_xlsx(HH_P_EA_21, path = "C:/Users/.../Created datasets/Emerging adults (HH+P) 2021.xlsx")
+write_xlsx(HH_P_EA_MP_C_17, path = "C:/Users/.../Created datasets/Emerging adults Completed SHP_P (HH+P+MP) 2017.xlsx")
+write_xlsx(HH_P_EA_MP_C_18, path = "C:/Users/.../Created datasets/Emerging adults Completed SHP_P (HH+P+MP) 2018.xlsx")
+write_xlsx(HH_P_EA_MP_C_19, path = "C:/Users/.../Created datasets/Emerging adults Completed SHP_P (HH+P+MP) 2019.xlsx")
+write_xlsx(HH_P_EA_MP_C_20, path = "C:/Users/.../Created datasets/Emerging adults Completed SHP_P (HH+P+MP) 2020.xlsx")
+write_xlsx(HH_P_EA_MP_C_21, path = "C:/Users/.../Created datasets/Emerging adults Completed SHP_P (HH+P+MP) 2021.xlsx")
+
+write_xlsx(merged_EA_completed, path = "C:/Users/.../Created datasets/Emerging adults from 2017-2021 weightened and not.xlsx")

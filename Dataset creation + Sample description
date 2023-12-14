@@ -23,34 +23,34 @@ library(survey)
 ### 1a) Importing Household data
 
 #SHP_HH file 2017
-HH_17<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W19_2017/SHP17_H_USER.sav", 
+HH_17<-read.spss("C:/Users/.../Data_SPSS/SHP-Data-W1-W23-SPSS/W19_2017/SHP17_H_USER.sav", 
                  to.data.frame = TRUE,
                  use.value.labels = FALSE,# Does not convert variables with value labels into factors
                  use.missings = FALSE)# Does not convert negative values into missing values (NA).
 HH_17=HH_17[order(HH_17$IDHOUS17),]
 #SHP_HH file 2018
-HH_18<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W20_2018/SHP18_H_USER.sav", 
+HH_18<-read.spss("C:/Users/.../Data_SPSS/SHP-Data-W1-W23-SPSS/W20_2018/SHP18_H_USER.sav", 
                  to.data.frame = TRUE,
                  use.value.labels = FALSE,# Does not convert variables with value labels into factors
                  use.missings = FALSE)# Does not convert negative values into missing values (NA).
 HH_18=HH_18[order(HH_18$IDHOUS18),]
 
 #SHP_HH file 2019
-HH_19<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W21_2019/SHP19_H_USER.sav", 
+HH_19<-read.spss("C:/Users/.../Data_SPSS/SHP-Data-W1-W23-SPSS/W21_2019/SHP19_H_USER.sav", 
                  to.data.frame = TRUE,
                  use.value.labels = FALSE,# Does not convert variables with value labels into factors
                  use.missings = FALSE)# Does not convert negative values into missing values (NA).
 HH_19=HH_19[order(HH_19$IDHOUS19),]
 
 #SHP_HH file 2020
-HH_20<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W22_2020/SHP20_H_USER.sav", 
+HH_20<-read.spss("C:/Users/.../Data_SPSS/SHP-Data-W1-W23-SPSS/W22_2020/SHP20_H_USER.sav", 
                  to.data.frame = TRUE,
                  use.value.labels = FALSE,# Does not convert variables with value labels into factors
                  use.missings = FALSE)# Does not convert negative values into missing values (NA).
 HH_20=HH_20[order(HH_20$IDHOUS20),]
 
 #SHP_HH file 2021  
-HH_21<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W23_2021/SHP21_H_USER.sav", 
+HH_21<-read.spss("C:/Users/.../Data_SPSS/SHP-Data-W1-W23-SPSS/W23_2021/SHP21_H_USER.sav", 
                  to.data.frame = TRUE,
                  use.value.labels = FALSE,# Does not convert variables with value labels into factors
                  use.missings = FALSE)# Does not convert negative values into missing values (NA).
@@ -59,7 +59,7 @@ HH_21=HH_21[order(HH_21$IDHOUS21),]
 ### 1b) Importing Personal data + filtering on age [18;25]
 
 #SHP_Individual file 2017 
-P_17<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W19_2017/SHP17_P_USER.sav", 
+P_17<-read.spss("C:/Users/.../Data_SPSS/SHP-Data-W1-W23-SPSS/W19_2017/SHP17_P_USER.sav", 
                 to.data.frame = TRUE,
                 use.value.labels = FALSE,# Does not convert variables with value labels into factors
                 use.missings = FALSE)# Does not convert negative values into missing values (NA).
@@ -69,7 +69,7 @@ P_17=P_17[order(P_17$IDHOUS17, P_17$IDPERS),]
 P_EA_2017 <- P_17 %>% filter (AGE17 >=18 & AGE17 <=25) #filtering on age [18;25]
 
 #SHP_Individual file 2018  
-P_18<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W20_2018/SHP18_P_USER.sav", 
+P_18<-read.spss("C:/Users/.../Data_SPSS/SHP-Data-W1-W23-SPSS/W20_2018/SHP18_P_USER.sav", 
                 to.data.frame = TRUE,
                 use.value.labels = FALSE,# Does not convert variables with value labels into factors
                 use.missings = FALSE)# Does not convert negative values into missing values (NA).
@@ -79,7 +79,7 @@ P_18=P_18[order(P_18$IDHOUS18, P_18$IDPERS),]
 P_EA_2018 <- P_18 %>% filter (AGE18 >=18 & AGE18 <=25) #filtering on age [18;25]
 
 #SHP_Individual file 2019  
-P_19<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W21_2019/SHP19_P_USER.sav", 
+P_19<-read.spss("C:/Users/.../Data_SPSS/SHP-Data-W1-W23-SPSS/W21_2019/SHP19_P_USER.sav", 
                 to.data.frame = TRUE,
                 use.value.labels = FALSE,# Does not convert variables with value labels into factors
                 use.missings = FALSE)# Does not convert negative values into missing values (NA).
@@ -89,7 +89,7 @@ P_19=P_19[order(P_19$IDHOUS19, P_19$IDPERS),]
 P_EA_19 <- P_19 %>% filter (AGE19 >=18 & AGE19 <=25) #filtering on age [18;25]
 
 #SHP_Individual file 2020
-P_20<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W22_2020/SHP20_P_USER.sav", 
+P_20<-read.spss("C:/Users/.../Data_SPSS/SHP-Data-W1-W23-SPSS/W22_2020/SHP20_P_USER.sav", 
                 to.data.frame = TRUE,
                 use.value.labels = FALSE,# Does not convert variables with value labels into factors
                 use.missings = FALSE)# Does not convert negative values into missing values (NA).
@@ -99,7 +99,7 @@ P_20=P_20[order(P_20$IDHOUS20, P_20$IDPERS),]
 P_EA_20 <- P_20 %>% filter (AGE20 >=18 & AGE20 <=25) #filtering on age [18;25]
 
 #SHP_Individual file 2021
-P_21<-read.spss("C:/Users/.../SHP-Data-W1-W23-SPSS/W23_2021/SHP21_P_USER.sav", 
+P_21<-read.spss("C:/Users/.../Data_SPSS/SHP-Data-W1-W23-SPSS/W23_2021/SHP21_P_USER.sav", 
                 to.data.frame = TRUE,
                 use.value.labels = FALSE,# Does not convert variables with value labels into factors
                 use.missings = FALSE)# Does not convert negative values into missing values (NA).
@@ -187,7 +187,7 @@ dim(HH_P_EA_21) # 2066  714
 ### 2a) Importing Individual Masterfiles scince it has information on participation 
 #
 
-Masterfile_P<-read.spss("C:/Users/.../SHP-Data-WA-SPSS/SHP_MP.sav", 
+Masterfile_P<-read.spss("C:/Users/.../Data_SPSS/SHP-Data-WA-SPSS/SHP_MP.sav", 
                         to.data.frame = TRUE,
                         use.value.labels = FALSE,# Does not convert variables with value labels into factors
                         use.missings = FALSE)# Does not convert negative values into missing values (NA).
@@ -413,6 +413,8 @@ if (length(duplicated_columns) > 0) {
 
 ### No duplicated column names found
 
+####### Filtering people with cross sectionnale weight >0
+#WI$$CSS: SHPI-SHPII-SHPIII-(SHPIV as of 2020) combined, cross-sectional individual weight keeping sample size, for year $$
 
 Data_17_21V2<- merged_EA_completed %>% 
   filter(STATUS17 == 0 & WI17CSS != -3|
@@ -420,10 +422,6 @@ Data_17_21V2<- merged_EA_completed %>%
            STATUS19 == 0 & WI19CSS != -3 |
            STATUS20 == 0 & WI20CSS!= -3 |
            STATUS21 == 0 & WI21CSS != -3)
-
-
-
-#WI$$CSS: SHPI-SHPII-SHPIII-(SHPIV as of 2020) combined, cross-sectional individual weight keeping sample size, for year $$
 
 
 
@@ -1622,7 +1620,7 @@ SummaryStatData_17_21_long %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPE
 SummaryStatData_17_21_long %>% filter(STATUS==0) %>% tabyl(Age_, Year) %>% adorn_totals("row")
 SummaryStatData_17_21_long %>% filter(STATUS==0)  %>% filter(is.na(new_weight_)) # 0
 
-SummaryStatData_17_21_long <- SummaryStatData_17_21_long %>% filter(!is.na(new_weight_))
+SummaryStatData_17_21_long <- SummaryStatData_17_21_long %>% filter(!is.na(STATUS)) #5375
 
 SummaryStatData_17_21_long %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) #2544  unique IDPERS answered
 
@@ -1649,6 +1647,8 @@ SummaryStatData_17_21_long <- SummaryStatData_17_21_long %>%
     Year == 21 ~ 2021,
     TRUE ~ NA_integer_
   ))
+
+SummaryStatData_17_21_long %>% group_by(Year) %>% summarize (mean(Age_), sd(Age_))
 
 UnSS<-SummaryStatData_17_21_long %>%
   tbl_summary(     
@@ -1677,6 +1677,7 @@ UnSS<-SummaryStatData_17_21_long %>%
     missing_text = "Missing"
   )
 
+
 ########## Summary statistics code for weightened data #######
 
 # Create a survey design object
@@ -1685,9 +1686,13 @@ Data_survey <- svydesign(ids = ~IDPERS, data = SummaryStatData_17_21_long, weigh
 WSS<-tbl_svysummary(Data_survey, by = Year, statistic = list(all_continuous() ~ "{mean} ({sd})"))
 summary(Data_survey)
 
+Data_survey$AGE <-as.numeric(Data_survey$AGE)
+
+svyby(~Age_, by=~Year, design=Data_survey, svymean, na.rm = T)
+x<-svyby(~Age_, by=~Year, design=Data_survey, svyvar, na.rm=T)
+sqrt(x$Age_)
 ######## To see how many IDPERS share same IDHOUS #####
 SummaryStatData_17_21_long %>% distinct(IDHOUS, .keep_all = TRUE) %>%count (IDHOUS) #2,008  unique IDHOUS answered
-
 
 table_IDPERSbyIDHOUS<-SummaryStatData_17_21_long %>%
   group_by(Year, IDHOUS) %>%
@@ -1740,3 +1745,4 @@ write_xlsx(HH_P_EA_MP_C_20, path = "C:/Users/.../Created datasets/Emerging adult
 write_xlsx(HH_P_EA_MP_C_21, path = "C:/Users/.../Created datasets/Emerging adults Completed SHP_P (HH+P+MP) 2021.xlsx")
 
 write_xlsx(merged_EA_completed, path = "C:/Users/.../Created datasets/Emerging adults from 2017-2021 weightened and not.xlsx")
+

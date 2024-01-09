@@ -1,0 +1,585 @@
+#########################################
+#########################################
+########## SC (17-20) Dataset ###########
+#########################################
+#########################################
+
+library(writexl)
+library(openxlsx)
+library(foreign)
+library(stats)
+library(stringr)
+library(tidyverse)
+library(janitor)
+library(dplyr)
+library(gridExtra)
+library(readxl)
+
+
+##################################################################
+######## Importing dataset & Creation of SC_17_20_dataset ########
+##################################################################
+rm(list = ls())
+
+merged_EA_completed <- read_excel("C:/Users/.../Created datasets/Data_17_21_long_W.xlsx")
+dim(merged_EA_completed) # 2544 3547
+
+merged_EA_completed<- merged_EA_completed %>% 
+  filter(STATUS17 == 0 |STATUS20 == 0 ) #2121
+
+
+# 1) Creation of Macro Level Variable
+
+# Overall satisfaction with democracy -> I will use it
+merged_EA_completed %>% filter (STATUS17==0) %>% tabyl(P17P02, ) %>% adorn_totals("row") # 27 NA
+merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(P20P02, ) %>% adorn_totals("row") # 85 NA
+
+# Feeling about political influence -> I will use it
+merged_EA_completed %>% filter (STATUS17==0) %>% tabyl(P17P03, ) %>% adorn_totals("row") # 10 NA
+merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(P20P03, ) %>% adorn_totals("row") # 68 NA
+
+# Trust in Federal Government
+merged_EA_completed %>% filter (STATUS17==0) %>% tabyl(P17P04, ) %>% adorn_totals("row") # 20 NA
+merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(P20P04, ) %>% adorn_totals("row") # 77 NA
+
+# 2) Meso level- openess
+# Opinion on chances for foreigners: Direction -> I will use it
+merged_EA_completed %>% filter (STATUS17==0) %>% tabyl(P17P15, ) %>% adorn_totals("row") # 33 NA
+merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(P20P15, ) %>% adorn_totals("row") # 91 NA
+
+###################
+#### Openness #####
+###################
+
+
+#############
+#### 17 #####
+#############
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Openness_17 = ifelse(
+      is.na(STATUS17), 
+      NA, 
+      ifelse(P17P15 %in% c(-8, -7, -3, -2, -1), NA, 
+             ifelse(P17P15 == 1, 1, 0)
+             )
+      )
+    )
+
+
+merged_EA_completed %>% filter (STATUS17==0) %>% tabyl(Openness_17, ) %>% adorn_totals("row") # 33 NA
+
+#############
+#### 20 #####
+#############
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Openness_20 = ifelse(
+      is.na(STATUS20), 
+      NA, 
+      ifelse(P20P15 %in% c(-8, -7, -3, -2, -1), NA, 
+             ifelse(P20P15 == 1, 1, 0)
+      )
+    )
+  )
+
+
+
+merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(Openness_20, ) %>% adorn_totals("row") # 91 NA
+
+##################
+#### Macro_L #####
+##################
+
+
+#############
+#### 17 #####
+#############
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Macro_L_17 = ifelse(
+      is.na(STATUS17), 
+      NA, 
+      as.numeric(
+        ifelse(P17P02 %in% c(-8, -7, -3, -2, -1), NA, P17P02) +
+          ifelse(P17P03 %in% c(-8, -7, -3, -2, -1), NA, P17P03) +
+          ifelse(P17P04 %in% c(-8, -7, -3, -2, -1), NA, P17P04)
+      )
+    )
+  )
+
+merged_EA_completed %>% filter (STATUS17==0) %>% tabyl(Macro_L_17, ) %>% adorn_totals("row") # 34 NA
+
+
+
+#############
+#### 20 #####
+#############
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Macro_L_20 = ifelse(
+      is.na(STATUS20), 
+      NA, 
+      as.numeric(
+        ifelse(P20P02 %in% c(-8, -7, -3, -2, -1), NA, P20P02) +
+          ifelse(P20P03 %in% c(-8, -7, -3, -2, -1), NA, P20P03) +
+          ifelse(P20P04 %in% c(-8, -7, -3, -2, -1), NA, P20P04)
+      )
+    )
+  )
+
+merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(Macro_L_20, ) %>% adorn_totals("row") # 121 NA
+
+
+
+################################################
+######   Addint potential adjustment factors ###
+######            Mental health              ###
+################################################
+
+# 1) Listlessness score creation
+
+# 2017
+merged_EA_completed <- merged_EA_completed %>%   mutate(
+  Score_Listlessness_17 = ifelse(
+    is.na(STATUS17), 
+    NA, 
+    as.numeric(
+      ifelse(P17C06A %in% c(-8, -7, -3, -2, -1), NA, P17C06A) +
+        ifelse(P17C05A %in% c(-8, -7, -3, -2, -1), NA, P17C05A) +
+        ifelse(P17C184 %in% c(-8, -7, -3, -2, -1), NA, P17C184)
+    )
+  )
+)
+
+
+# 2020
+merged_EA_completed <- merged_EA_completed %>%   mutate(
+  Score_Listlessness_20 = ifelse(
+    is.na(STATUS20), 
+    NA, 
+    as.numeric(
+      ifelse(P20C06A %in% c(-8, -7, -3, -2, -1), NA, P20C06A) +
+        ifelse(P20C05A %in% c(-8, -7, -3, -2, -1), NA, P20C05A) +
+        ifelse(P20C184 %in% c(-8, -7, -3, -2, -1), NA, P20C184)
+    )
+  )
+)
+
+
+# 2) Life satisfaction creation    
+
+
+# 2017
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    LS_17 = ifelse(
+      is.na(STATUS17), 
+      NA, 
+      as.numeric(
+        ifelse(P17C44 %in% c(-8, -7, -3, -2, -1), NA, P17C44)))
+  )
+# 2020
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    LS_20 = ifelse(
+      is.na(STATUS20), 
+      NA, 
+      as.numeric(
+        ifelse(P20C44 %in% c(-8, -7, -3, -2, -1), NA, P20C44)))
+  )
+
+
+# 3) Emotion score creation 
+
+# 2017
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Score_Neg_Emotions_17 = ifelse(
+      is.na(STATUS19), 
+      NA, 
+      as.numeric(
+        ifelse(P17C48 %in% c(-8, -7, -3, -2, -1), NA, P17C48) +
+          ifelse(P17C49 %in% c(-8, -7, -3, -2, -1), NA, P17C49) +
+          ifelse(P17C50 %in% c(-8, -7, -3, -2, -1), NA, P17C50) +
+          ifelse(P17C17 %in% c(-8, -7, -3, -2, -1), NA, P17C17) +
+          ifelse(P17C47 %in% c(-8, -7, -3, -2, -1), NA, 11-P17C47) +
+          ifelse(P17C18 %in% c(-8, -7, -3, -2, -1), NA, 11-P17C18)
+      )
+    )
+  )
+
+# 2020
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    Score_Neg_Emotions_20 = ifelse(
+      is.na(STATUS20), 
+      NA, 
+      as.numeric(
+        ifelse(P20C48 %in% c(-8, -7, -3, -2, -1), NA, P20C48) +
+          ifelse(P20C49 %in% c(-8, -7, -3, -2, -1), NA, P20C49) +
+          ifelse(P20C50 %in% c(-8, -7, -3, -2, -1), NA, P20C50) +
+          ifelse(P20C17 %in% c(-8, -7, -3, -2, -1), NA, P20C17) +
+          ifelse(P20C47 %in% c(-8, -7, -3, -2, -1), NA, 11- P20C47) +
+          ifelse(P20C18 %in% c(-8, -7, -3, -2, -1), NA, 11-P20C18)
+      )
+    )
+  )
+
+
+#################################
+#### COMMON DATASET CREATION ####
+#################################
+
+# Create a new data set with the selected columns
+Dataset <- merged_EA_completed %>%
+  dplyr::select("IDPERS", starts_with("SEX"), starts_with("IDHOUS"), starts_with("AGE"),
+                starts_with("STATUS"), starts_with("EDUCAT"), starts_with("CANTON"), 
+                starts_with("PLINGU"), starts_with("OCCUPA"), 
+                "P17P10", "P20P10", 
+                "P17MODES", "P17D29", "P17D161", "P17I01",  "P17C01", "COM2_17", 
+                "P17E14", "P20MODES", "P20D29",  
+                "P20D161", "P20I01", "P20C01",  "COM2_20", "P20E14", 
+                starts_with("AGE"),starts_with("new_weight"), 
+                starts_with("Score_Neg_Emotions"), 
+                starts_with("Score_Listlessness"), starts_with("LS"),
+                starts_with("Openness_"), starts_with("Macro_L_")
+  )
+
+
+
+
+# 2) Reencode variables for 17
+
+columns_to_inspect <- c( "P17MODES", "P17D29", "PLINGU17", "P17D161", "OCCUPA17", "P17I01", "EDUCAT17", "P17C01", "CANTON17", "COM2_17", "P17P10","P17E14" )
+column_classes <- sapply(Dataset[, columns_to_inspect], class)
+print(column_classes)
+
+Dataset<- Dataset %>% mutate_at(vars(columns_to_inspect), as.character)
+
+
+# recode_factor variable names and values labels
+Dataset <- Dataset %>%
+  rename(
+    Mode_of_Data_Collection_17 = P17MODES,
+    Finan_satisfaction_17= P17I01,
+    Partner_17 = P17D29,
+    Interview_language_17 = PLINGU17,
+    Currently_Working_17 = OCCUPA17,
+    Currently_Training_17 = P17E14,
+    Education_Level_17 = EDUCAT17,
+    Health_Status_17 = P17C01,
+    Canton_of_Residence_17 = CANTON17,
+    Community_Typology_17 = COM2_17, 
+    Political_position_17 = P17P10,
+  ) %>%
+  mutate(
+    Mode_of_Data_Collection_17 = recode_factor(Mode_of_Data_Collection_17,
+                                               '1' = 'CATI',
+                                               '2' = 'CAPI',
+                                               '3' = 'CAWI',
+                                               '4' = 'PAPI', 
+                                               .default = NA_character_),
+    Currently_Training_17 = recode_factor(Currently_Training_17,
+                                          '1' = 'Yes',
+                                          '2' = 'No', 
+                                          .default = NA_character_),      
+    Interview_language_17 = recode_factor(Interview_language_17, 
+                                          '1' = 'Latin',
+                                          '2' = 'German',
+                                          '3' = 'Latin', 
+                                          .default = NA_character_),
+    Finan_satisfaction_17 = recode_factor(Finan_satisfaction_17, 
+                                          '0' = '0',
+                                          '1' = '1',
+                                          '2' = '2',
+                                          '3' = '3',
+                                          '4' = '4',
+                                          '5' = '5',
+                                          '6' = '6',
+                                          '7' = '7',
+                                          '8' = '8',
+                                          '9' = '9',
+                                          '10' = '10', 
+                                          .default = NA_character_),
+    Partner_17 = recode_factor(Partner_17,
+                               '1' = 'Yes, Living Together',
+                               '2' = 'Yes, But Not Living Together',
+                               '3' = 'No', 
+                               .default =NA_character_),
+    Currently_Working_17 = recode_factor(Currently_Working_17,
+                                         '1' = 'Yes',
+                                         '2' = 'Yes',
+                                         '3' = 'Yes',
+                                         '4' = 'No',
+                                         '5' = 'Yes',
+                                         '6' = 'Yes',
+                                         '7' = 'No',
+                                         '8' = 'No',
+                                         '9' = 'No',
+                                         '10' = 'No',
+                                         '11' = 'No', 
+                                         .default = NA_character_),
+    Education_Level_17 = recode_factor(Education_Level_17,
+                                       '-6' = 'Pre-tertiary education',
+                                       '-5' = 'Pre-tertiary education',
+                                       '-4' = 'Pre-tertiary education',
+                                       '0' = 'Pre-tertiary education',
+                                       '1' = 'Pre-tertiary education',
+                                       '2' = 'Pre-tertiary education',
+                                       '3' = 'Pre-tertiary education',
+                                       '4' = 'Pre-tertiary education',
+                                       '5' = 'Pre-tertiary education',
+                                       '6' = 'Pre-tertiary education',
+                                       '7' = 'Tertiary education',
+                                       '8' = 'Pre-tertiary education',
+                                       '9' = 'Tertiary education',
+                                       '10' = 'Tertiary education',
+                                       .default =NA_character_),
+    Health_Status_17 = recode_factor(Health_Status_17,
+                                     '1' = '5',
+                                     '2' = '4',
+                                     '3' = '3',
+                                     '4' = '2',
+                                     '5' = '1', 
+                                     .default = NA_character_),
+    Canton_of_Residence_17 = recode_factor(Canton_of_Residence_17,
+                                           '1' = 'German',
+                                           '2' = 'German',
+                                           '3' = 'German',
+                                           '4' = 'German',
+                                           '5' = 'German',
+                                           '6' = 'German',
+                                           '7' = 'Latin',
+                                           '8' = 'Latin',
+                                           '9' = 'German',
+                                           '10' = 'German',
+                                           '11' = 'Latin',
+                                           '12' = 'German',
+                                           '13' = 'Latin',
+                                           '14' = 'German',
+                                           '15' = 'German',
+                                           '16' = 'German',
+                                           '17' = 'German',
+                                           '18' = 'German',
+                                           '19' = 'German',
+                                           '20' = 'German',
+                                           '21' = 'Latin',
+                                           '22' = 'German',
+                                           '23' = 'Latin',
+                                           '24' = 'Latin',
+                                           '25' = 'German',
+                                           '26' = 'German'),
+    Community_Typology_17 = recode_factor(Community_Typology_17,
+                                          '1' = 'Urban and Suburban',
+                                          '2' = 'Urban and Suburban',
+                                          '3' = 'Urban and Suburban',
+                                          '4' = 'Urban and Suburban',
+                                          '5' = 'Urban and Suburban',
+                                          '6' = 'Urban and Suburban',
+                                          '7' = 'Rural',
+                                          '8' = 'Rural',
+                                          '9' = 'Rural', 
+                                          .default = NA_character_), 
+    Political_position_17 = recode_factor( Political_position_17, 
+                                           '0' = '0',
+                                           '1' = '1',
+                                           '2' = '2',
+                                           '3' = '3',
+                                           '4' = '4',
+                                           '5' = '5',
+                                           '6' = '6',
+                                           '7' = '7',
+                                           '8' = '8',
+                                           '9' = '9',
+                                           '10' = '10', 
+                                           .default = NA_character_)
+  )
+
+
+
+#########################
+###### Sample  20 #######
+#########################
+
+columns_to_inspect <- c( "P20MODES", "P20D29", "PLINGU20", "P20D161", "OCCUPA20", "P20I01", "EDUCAT20", "P20C01", "CANTON20", "COM2_20", "P20P10","P20E14" )
+column_classes <- sapply(Dataset [, columns_to_inspect], class)
+print(column_classes)
+
+Dataset <- Dataset  %>% mutate_at(vars(columns_to_inspect), as.character)
+
+
+# recode_factor variable names and values labels
+Dataset <- Dataset %>%
+  rename(
+    Mode_of_Data_Collection_20 = P20MODES,
+    Finan_satisfaction_20= P20I01,
+    Partner_20 = P20D29,
+    Interview_language_20 = PLINGU20,
+    Currently_Working_20 = OCCUPA20,
+    Currently_Training_20 = P20E14,
+    Education_Level_20 = EDUCAT20,
+    Health_Status_20 = P20C01,
+    Canton_of_Residence_20 = CANTON20,
+    Community_Typology_20 = COM2_20, 
+    Political_position_20 = P20P10,
+  ) %>%
+  mutate(
+    Mode_of_Data_Collection_20 = recode_factor(Mode_of_Data_Collection_20,
+                                               '1' = 'CATI',
+                                               '2' = 'CAPI',
+                                               '3' = 'CAWI',
+                                               '4' = 'PAPI', 
+                                               .default = NA_character_),
+    Currently_Training_20 = recode_factor(Currently_Training_20, 
+                                          '1' = 'Yes',
+                                          '2' = 'No', 
+                                          .default = NA_character_),      
+    Interview_language_20 = recode_factor(Interview_language_20, 
+                                          '1' = 'Latin',
+                                          '2' = 'German',
+                                          '3' = 'Latin', 
+                                          .default = NA_character_),
+    Finan_satisfaction_20 = recode_factor(Finan_satisfaction_20,
+                                          '0' = '0',
+                                          '1' = '1',
+                                          '2' = '2',
+                                          '3' = '3',
+                                          '4' = '4',
+                                          '5' = '5',
+                                          '6' = '6',
+                                          '7' = '7',
+                                          '8' = '8',
+                                          '9' = '9',
+                                          '10' = '10', 
+                                          .default = NA_character_),
+    Partner_20 = recode_factor(Partner_20,
+                               '1' = 'Yes, Living Together',
+                               '2' = 'Yes, But Not Living Together',
+                               '3' = 'No', 
+                               .default = NA_character_),
+    Currently_Working_20 = recode_factor(Currently_Working_20,
+                                         '1' = 'Yes',
+                                         '2' = 'Yes',
+                                         '3' = 'Yes',
+                                         '4' = 'No',
+                                         '5' = 'Yes',
+                                         '6' = 'Yes',
+                                         '7' = 'No',
+                                         '8' = 'No',
+                                         '9' = 'No',
+                                         '10' = 'No',
+                                         '11' = 'No', 
+                                         .default = NA_character_),
+    Education_Level_20 = recode_factor(Education_Level_20,
+                                       '-6' = 'Pre-tertiary education',
+                                       '-5' = 'Pre-tertiary education',
+                                       '-4' = 'Pre-tertiary education',
+                                       '0' = 'Pre-tertiary education',
+                                       '1' = 'Pre-tertiary education',
+                                       '2' = 'Pre-tertiary education',
+                                       '3' = 'Pre-tertiary education',
+                                       '4' = 'Pre-tertiary education',
+                                       '5' = 'Pre-tertiary education',
+                                       '6' = 'Pre-tertiary education',
+                                       '7' = 'Tertiary education',
+                                       '8' = 'Pre-tertiary education',
+                                       '9' = 'Tertiary education',
+                                       '10' = 'Tertiary education', 
+                                       .default = NA_character_),
+    Health_Status_20 = recode_factor(Health_Status_20,
+                                     '1' = '5',
+                                     '2' = '4',
+                                     '3' = '3',
+                                     '4' = '2',
+                                     '5' = '1', 
+                                     .default = NA_character_),
+    Canton_of_Residence_20 = recode_factor(Canton_of_Residence_20,
+                                           '1' = 'German',
+                                           '2' = 'German',
+                                           '3' = 'German',
+                                           '4' = 'German',
+                                           '5' = 'German',
+                                           '6' = 'German',
+                                           '7' = 'Latin',
+                                           '8' = 'Latin',
+                                           '9' = 'German',
+                                           '10' = 'German',
+                                           '11' = 'Latin',
+                                           '12' = 'German',
+                                           '13' = 'Latin',
+                                           '14' = 'German',
+                                           '15' = 'German',
+                                           '16' = 'German',
+                                           '17' = 'German',
+                                           '18' = 'German',
+                                           '19' = 'German',
+                                           '20' = 'German',
+                                           '21' = 'Latin',
+                                           '22' = 'German',
+                                           '23' = 'Latin',
+                                           '24' = 'Latin',
+                                           '25' = 'German',
+                                           '26' = 'German',
+                                           .default = NA_character_),
+    Community_Typology_20 = recode_factor(Community_Typology_20,
+                                          '1' = 'Urban and Suburban',
+                                          '2' = 'Urban and Suburban',
+                                          '3' = 'Urban and Suburban',
+                                          '4' = 'Urban and Suburban',
+                                          '5' = 'Urban and Suburban',
+                                          '6' = 'Urban and Suburban',
+                                          '7' = 'Rural',
+                                          '8' = 'Rural',
+                                          '9' = 'Rural', 
+                                          .default = NA_character_), 
+    Political_position_20 = recode_factor( Political_position_20,
+                                           '0' = '0',
+                                           '1' = '1',
+                                           '2' = '2',
+                                           '3' = '3',
+                                           '4' = '4',
+                                           '5' = '5',
+                                           '6' = '6',
+                                           '7' = '7',
+                                           '8' = '8',
+                                           '9' = '9',
+                                           '10' = '10',  
+                                           .default = NA_character_)
+  )
+
+
+Dataset_wide <- Dataset
+
+Dataset_wide %>%
+  dplyr::select(IDPERS) %>%
+  distinct() %>%
+  n_distinct() #2121
+
+
+# Select the columns with IDPERS and scores for different years
+selected_cols <- Dataset_wide %>%
+  dplyr::select(IDPERS, ends_with("17"), ends_with("20"))
+
+# Pivot the selected columns to long format
+pivoted_data <- selected_cols %>%
+  pivot_longer(cols = -IDPERS,
+               names_to = c(".value", "Year"),
+               names_pattern = "(.*)(17|20)$")
+
+
+pivoted_data %>% tabyl(AGE, Year)
+
+pivoted_data <- pivoted_data %>%
+  mutate(Gender = ifelse(SEX == 1, "Male", "Female"))
+
+Dataset_long<-pivoted_data
+
+
+write_xlsx(Dataset_long, path = "C:/Users/.../Created datasets/Social_cohesion_17_20_long.xlsx")
+write_xlsx(Dataset_wide, path = "C:/Users/.../Created datasets/Social_cohesion_17_20_wide.xlsx")
+
+

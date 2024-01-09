@@ -1685,8 +1685,13 @@ Data_survey <- svydesign(ids = ~IDPERS, data = SummaryStatData_17_21_long, weigh
 
 WSS<-tbl_svysummary(Data_survey, by = Year, statistic = list(all_continuous() ~ "{mean} ({sd})"))
 summary(Data_survey)
+Data_survey$Gender_ <-as.factor(Data_survey$Gender_)
 
-Data_survey$AGE <-as.numeric(Data_survey$AGE)
+svymean(~Age_, design=Data_survey) # 21.512
+svyvar(~Age_, design=Data_survey) # 5.5836 
+sqrt(5.5836)#2.362964
+svytotal(~Gender_,design=Data_survey)
+svytotal(~Interview_language_,design=Data_survey)
 
 svyby(~Age_, by=~Year, design=Data_survey, svymean, na.rm = T)
 x<-svyby(~Age_, by=~Year, design=Data_survey, svyvar, na.rm=T)
@@ -1745,4 +1750,5 @@ write_xlsx(HH_P_EA_MP_C_20, path = "C:/Users/.../Created datasets/Emerging adult
 write_xlsx(HH_P_EA_MP_C_21, path = "C:/Users/.../Created datasets/Emerging adults Completed SHP_P (HH+P+MP) 2021.xlsx")
 
 write_xlsx(merged_EA_completed, path = "C:/Users/.../Created datasets/Emerging adults from 2017-2021 weightened and not.xlsx")
+
 

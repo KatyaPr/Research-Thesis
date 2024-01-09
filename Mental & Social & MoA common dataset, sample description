@@ -167,16 +167,16 @@ merged_EA_completed %>% filter (STATUS21==0) %>% tabyl(P21P45, Trust_21) %>% ado
 # 2018
 
 merged_EA_completed <- merged_EA_completed %>%
-  mutate(x_18 = ifelse(STATUS18 != 0, NA,
+  mutate(WES_18 = ifelse(STATUS18 != 0, NA,
                        ifelse(P18YTH07 >= 0 & P18W94 < 0, P18YTH07,
                               ifelse(P18W94 >= 0 & P18YTH07 < 0, P18W94,
                                      ifelse(P18W94 >= 0 & P18YTH07 >= 0, (P18W94 + P18YTH07)/2,
                                             ifelse(P18W94 < 0 & P18YTH07 < 0, NA, NA))))))
 
 
-merged_EA_completed%>% filter (STATUS18==0) %>% tabyl(P18YTH07,P18W94 ) %>% adorn_totals("row") # 69 NA
+merged_EA_completed%>% filter (STATUS18==0) %>% tabyl(P18YTH07,P18W94 ) %>% adorn_totals("row") #66NA
 
-merged_EA_completed%>% filter (STATUS18==0) %>% tabyl(x_18, ) # 69 NA
+merged_EA_completed%>% filter (STATUS18==0) %>% tabyl(WES_18, ) # 66 NA
 
 
 merged_EA_completed <- merged_EA_completed %>% 
@@ -186,28 +186,38 @@ merged_EA_completed <- merged_EA_completed %>%
       NA, 
       as.numeric(
         ifelse(P18QL04 %in% c(-8, -7, -3, -2, -1), NA, P18QL04) +
-          ifelse(x_18 %in% c(-8, -7, -3, -2, -1), NA, x_18)
+          ifelse(WES_18 %in% c(-8, -7, -3, -2, -1), NA, WES_18)
       )
     )
   )
 
-merged_EA_completed %>% filter (STATUS18==0) %>% tabyl(SRS_18, ) %>% adorn_totals("row") # 69 na
+merged_EA_completed %>% filter (STATUS18==0) %>% tabyl(SRS_18, ) %>% adorn_totals("row") 
 
-merged_EA_completed%>% filter (STATUS18==0) %>% tabyl(x_18,SRS_18 ) %>% adorn_totals("row") # 69 NA
+merged_EA_completed%>% filter (STATUS18==0) %>% tabyl(WES_18,SRS_18 ) %>% adorn_totals("row") 
+
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    PRS_18 = ifelse(
+      is.na(STATUS18), 
+      NA, 
+      as.numeric(
+        ifelse(P18QL04 %in% c(-8, -7, -3, -2, -1), NA, P18QL04)))
+  )
 
 # 2019
 
 merged_EA_completed <- merged_EA_completed %>%
-  mutate(x_19 = ifelse(STATUS19 != 0, NA,
-                       ifelse(P19YTH07 >= 0 & P19W94 < 0, P19YTH07,
-                              ifelse(P19W94 >= 0 & P19YTH07 < 0, P19W94,
-                                     ifelse(P19W94 >= 0 & P19YTH07 >= 0, (P19W94 + P19YTH07)/2,
-                                            ifelse(P19W94 < 0 & P19YTH07 < 0, NA, NA))))))
+  mutate(WES_19 = ifelse(STATUS19 != 0, NA,
+                         ifelse(P19YTH07 >= 0 & P19W94 < 0, P19YTH07,
+                                ifelse(P19W94 >= 0 & P19YTH07 < 0, P19W94,
+                                       ifelse(P19W94 >= 0 & P19YTH07 >= 0, (P19W94 + P19YTH07)/2,
+                                              ifelse(P19W94 < 0 & P19YTH07 < 0, NA, NA))))))
 
 
-merged_EA_completed%>% filter (STATUS19==0) %>% tabyl(P19YTH07,P19W94 ) %>% adorn_totals("row") # 58 NA
+merged_EA_completed%>% filter (STATUS19==0) %>% tabyl(P19YTH07,P19W94 ) %>% adorn_totals("row")
 
-merged_EA_completed%>% filter (STATUS19==0) %>% tabyl(x_19, ) # 58 NA
+merged_EA_completed%>% filter (STATUS19==0) %>% tabyl(WES_19, ) 
 
 
 merged_EA_completed <- merged_EA_completed %>% 
@@ -217,28 +227,38 @@ merged_EA_completed <- merged_EA_completed %>%
       NA, 
       as.numeric(
         ifelse(P19QL04 %in% c(-8, -7, -3, -2, -1), NA, P19QL04) +
-          ifelse(x_19 %in% c(-8, -7, -3, -2, -1), NA, x_19)
+          ifelse(WES_19 %in% c(-8, -7, -3, -2, -1), NA, WES_19)
       )
     )
   )
 
-merged_EA_completed %>% filter (STATUS19==0) %>% tabyl(SRS_19, ) %>% adorn_totals("row") # 60 NA
+merged_EA_completed %>% filter (STATUS19==0) %>% tabyl(SRS_19, P19QL04) %>% adorn_totals("row") 
 
-merged_EA_completed%>% filter (STATUS19==0) %>% tabyl(x_19,P19QL04 ) %>% adorn_totals("row") # 60 NA
+merged_EA_completed%>% filter (STATUS19==0) %>% tabyl(WES_19,SRS_19 ) %>% adorn_totals("row") 
+
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    PRS_19 = ifelse(
+      is.na(STATUS19), 
+      NA, 
+      as.numeric(
+        ifelse(P19QL04 %in% c(-8, -7, -3, -2, -1), NA, P19QL04)))
+  )
 
 # 2020
 
 merged_EA_completed <- merged_EA_completed %>%
-  mutate(x_20 = ifelse(STATUS20 != 0, NA,
-                       ifelse(P20YTH07 >= 0 & P20W94 < 0, P20YTH07,
-                              ifelse(P20W94 >= 0 & P20YTH07 < 0, P20W94,
-                                     ifelse(P20W94 >= 0 & P20YTH07 >= 0, (P20W94 + P20YTH07)/2,
-                                            ifelse(P20W94 < 0 & P20YTH07 < 0, NA, NA))))))
+  mutate(WES_20 = ifelse(STATUS20 != 0, NA,
+                         ifelse(P20YTH07 >= 0 & P20W94 < 0, P20YTH07,
+                                ifelse(P20W94 >= 0 & P20YTH07 < 0, P20W94,
+                                       ifelse(P20W94 >= 0 & P20YTH07 >= 0, (P20W94 + P20YTH07)/2,
+                                              ifelse(P20W94 < 0 & P20YTH07 < 0, NA, NA))))))
 
 
-merged_EA_completed%>% filter (STATUS20==0) %>% tabyl(P20YTH07,P20W94 ) %>% adorn_totals("row") # 147 NA
+merged_EA_completed%>% filter (STATUS20==0) %>% tabyl(P20YTH07,P20W94 ) %>% adorn_totals("row") #66NA
 
-merged_EA_completed%>% filter (STATUS20==0) %>% tabyl(x_20, ) # 147 NA
+merged_EA_completed%>% filter (STATUS20==0) %>% tabyl(WES_20, ) # 66 NA
 
 
 merged_EA_completed <- merged_EA_completed %>% 
@@ -248,28 +268,38 @@ merged_EA_completed <- merged_EA_completed %>%
       NA, 
       as.numeric(
         ifelse(P20QL04 %in% c(-8, -7, -3, -2, -1), NA, P20QL04) +
-          ifelse(x_20 %in% c(-8, -7, -3, -2, -1), NA, x_20)
+          ifelse(WES_20 %in% c(-8, -7, -3, -2, -1), NA, WES_20)
       )
     )
   )
 
-merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(SRS_20, ) %>% adorn_totals("row") # 160 NA
+merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(SRS_20, ) %>% adorn_totals("row") 
 
-merged_EA_completed%>% filter (STATUS20==0) %>% tabyl(x_20,P20QL04 ) %>% adorn_totals("row") # 161 NA
+merged_EA_completed%>% filter (STATUS20==0) %>% tabyl(WES_20,SRS_20 ) %>% adorn_totals("row") 
+
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    PRS_20 = ifelse(
+      is.na(STATUS20), 
+      NA, 
+      as.numeric(
+        ifelse(P20QL04 %in% c(-8, -7, -3, -2, -1), NA, P20QL04)))
+  )
 
 # 2021
 
 merged_EA_completed <- merged_EA_completed %>%
-  mutate(x_21 = ifelse(STATUS21 != 0, NA,
-                       ifelse(P21YTH07 >= 0 & P21W94 < 0, P21YTH07,
-                              ifelse(P21W94 >= 0 & P21YTH07 < 0, P21W94,
-                                     ifelse(P21W94 >= 0 & P21YTH07 >= 0, (P21W94 + P21YTH07)/2,
-                                            ifelse(P21W94 < 0 & P21YTH07 < 0, NA, NA))))))
+  mutate(WES_21 = ifelse(STATUS21 != 0, NA,
+                         ifelse(P21YTH07 >= 0 & P21W94 < 0, P21YTH07,
+                                ifelse(P21W94 >= 0 & P21YTH07 < 0, P21W94,
+                                       ifelse(P21W94 >= 0 & P21YTH07 >= 0, (P21W94 + P21YTH07)/2,
+                                              ifelse(P21W94 < 0 & P21YTH07 < 0, NA, NA))))))
 
 
-merged_EA_completed%>% filter (STATUS21==0) %>% tabyl(P21YTH07,P21W94 ) %>% adorn_totals("row") # 130 NA
+merged_EA_completed%>% filter (STATUS21==0) %>% tabyl(P21YTH07,P21W94 ) %>% adorn_totals("row")
 
-merged_EA_completed%>% filter (STATUS21==0) %>% tabyl(x_21, ) # 130 NA
+merged_EA_completed%>% filter (STATUS21==0) %>% tabyl(WES_21, ) 
 
 
 merged_EA_completed <- merged_EA_completed %>% 
@@ -279,15 +309,24 @@ merged_EA_completed <- merged_EA_completed %>%
       NA, 
       as.numeric(
         ifelse(P21QL04 %in% c(-8, -7, -3, -2, -1), NA, P21QL04) +
-          ifelse(x_21 %in% c(-8, -7, -3, -2, -1), NA, x_21)
+          ifelse(WES_21 %in% c(-8, -7, -3, -2, -1), NA, WES_21)
       )
     )
   )
 
-merged_EA_completed %>% filter (STATUS21==0) %>% tabyl(SRS_21, ) %>% adorn_totals("row") # 138 NA
+merged_EA_completed %>% filter (STATUS21==0) %>% tabyl(SRS_21, P21QL04) %>% adorn_totals("row") 
 
-merged_EA_completed%>% filter (STATUS21==0) %>% tabyl(x_21,P21QL04 ) %>% adorn_totals("row") # 138 NA
+merged_EA_completed%>% filter (STATUS21==0) %>% tabyl(WES_21,SRS_21 ) %>% adorn_totals("row") 
 
+
+merged_EA_completed <- merged_EA_completed %>% 
+  mutate(
+    PRS_21 = ifelse(
+      is.na(STATUS21), 
+      NA, 
+      as.numeric(
+        ifelse(P21QL04 %in% c(-8, -7, -3, -2, -1), NA, P21QL04)))
+  )
 
 ################
 ##### MoA  #####
@@ -529,7 +568,7 @@ merged_EA_completed %>% filter(STATUS18 ==0) %>%  tabyl(HLDCEN18, ADUK1_18)
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
     Ind_H_18 = ifelse(
-      is.na(STATUS18) | (HLDCEN18 < 0 & HLDCEN18 == 3110), 
+      is.na(STATUS18) | (ADUK1_18 < 0), 
       NA, 
       as.numeric(ifelse(ADUK1_18 == 0, 1, 0))
     )
@@ -539,7 +578,7 @@ merged_EA_completed <- merged_EA_completed %>%
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
     Ind_H_19 = ifelse(
-      is.na(STATUS19) | (HLDCEN19 < 0 & HLDCEN19 == 3110), 
+      is.na(STATUS19) | (ADUK1_19 < 0), 
       NA, 
       as.numeric(ifelse(ADUK1_19 == 0, 1, 0))
     )
@@ -549,7 +588,7 @@ merged_EA_completed <- merged_EA_completed %>%
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
     Ind_H_20 = ifelse(
-      is.na(STATUS20) | (HLDCEN20 < 0 & HLDCEN20 == 3110), 
+      is.na(STATUS20) | (ADUK1_20 < 0), 
       NA, 
       as.numeric(ifelse(ADUK1_20 == 0, 1, 0))
     )
@@ -559,7 +598,7 @@ merged_EA_completed <- merged_EA_completed %>%
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
     Ind_H_21 = ifelse(
-      is.na(STATUS21) | (HLDCEN21 < 0 & HLDCEN21 == 3110), 
+      is.na(STATUS21) | (ADUK1_21 < 0), 
       NA, 
       as.numeric(ifelse(ADUK1_21 == 0, 1, 0))
     )
@@ -689,7 +728,7 @@ merged_EA_completed <- merged_EA_completed %>%
       as.numeric(
         ifelse(P18C06A %in% c(-8, -7, -3, -2, -1), NA, P18C06A) +
           ifelse(P18C05A %in% c(-8, -7, -3, -2, -1), NA, P18C05A) +
-          ifelse(P18C184 %in% c(-8, -7, -3, -2, -1), NA, P18C184)
+          ifelse(P18C184 %in% c(-8, -7, -3, -2, -1), NA, P18C184) -3
       )
     )
   )
@@ -703,7 +742,7 @@ merged_EA_completed <- merged_EA_completed %>%   mutate(
     as.numeric(
       ifelse(P19C06A %in% c(-8, -7, -3, -2, -1), NA, P19C06A) +
         ifelse(P19C05A %in% c(-8, -7, -3, -2, -1), NA, P19C05A) +
-        ifelse(P19C184 %in% c(-8, -7, -3, -2, -1), NA, P19C184)
+        ifelse(P19C184 %in% c(-8, -7, -3, -2, -1), NA, P19C184) - 3
     )
   )
 )
@@ -718,7 +757,7 @@ merged_EA_completed <- merged_EA_completed %>%   mutate(
     as.numeric(
       ifelse(P20C06A %in% c(-8, -7, -3, -2, -1), NA, P20C06A) +
         ifelse(P20C05A %in% c(-8, -7, -3, -2, -1), NA, P20C05A) +
-        ifelse(P20C184 %in% c(-8, -7, -3, -2, -1), NA, P20C184)
+        ifelse(P20C184 %in% c(-8, -7, -3, -2, -1), NA, P20C184) -3
     )
   )
 )
@@ -732,7 +771,7 @@ merged_EA_completed <- merged_EA_completed %>%   mutate(
     as.numeric(
       ifelse(P21C06A %in% c(-8, -7, -3, -2, -1), NA, P21C06A) +
         ifelse(P21C05A %in% c(-8, -7, -3, -2, -1), NA, P21C05A) +
-        ifelse(P21C184 %in% c(-8, -7, -3, -2, -1), NA, P21C184)
+        ifelse(P21C184 %in% c(-8, -7, -3, -2, -1), NA, P21C184) - 3
     )
   )
 )
@@ -748,9 +787,11 @@ merged_EA_completed <- merged_EA_completed %>%
       is.na(STATUS18), 
       NA, 
       as.numeric(
-        ifelse(P18C44 %in% c(-8, -7, -3, -2, -1), NA, P18C44)))
+        ifelse(P18C44 %in% c(-8, -7, -3, -2, -1), NA, P18C44)+
+          ifelse(P18A05 %in% c(-8, -7, -3, -2, -1), NA, P18A05)+
+          ifelse(P18A06 %in% c(-8, -7, -3, -2, -1), NA, P18A06)
+        ))
   )
-
 # 2019
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -758,7 +799,10 @@ merged_EA_completed <- merged_EA_completed %>%
       is.na(STATUS19), 
       NA, 
       as.numeric(
-        ifelse(P19C44 %in% c(-8, -7, -3, -2, -1), NA, P19C44)))
+        ifelse(P19C44 %in% c(-8, -7, -3, -2, -1), NA, P19C44)+
+          ifelse(P19A05 %in% c(-8, -7, -3, -2, -1), NA, P19A05)+
+          ifelse(P19A06 %in% c(-8, -7, -3, -2, -1), NA, P19A06)
+        ))
   )
 # 2020
 merged_EA_completed <- merged_EA_completed %>% 
@@ -767,7 +811,10 @@ merged_EA_completed <- merged_EA_completed %>%
       is.na(STATUS20), 
       NA, 
       as.numeric(
-        ifelse(P20C44 %in% c(-8, -7, -3, -2, -1), NA, P20C44)))
+        ifelse(P20C44 %in% c(-8, -7, -3, -2, -1), NA, P20C44)+
+          ifelse(P20A05 %in% c(-8, -7, -3, -2, -1), NA, P20A05)+
+          ifelse(P20A06 %in% c(-8, -7, -3, -2, -1), NA, P20A06)
+        ))
   )
 
 # 2021
@@ -777,7 +824,10 @@ merged_EA_completed <- merged_EA_completed %>%
       is.na(STATUS21), 
       NA, 
       as.numeric(
-        ifelse(P21C44 %in% c(-8, -7, -3, -2, -1), NA, P21C44)))
+        ifelse(P21C44 %in% c(-8, -7, -3, -2, -1), NA, P21C44)+
+          ifelse(P21A05 %in% c(-8, -7, -3, -2, -1), NA, P21A05)+
+          ifelse(P21A06 %in% c(-8, -7, -3, -2, -1), NA, P21A06)
+        ))
   )
 
 # 3) Emotion score creation 
@@ -851,6 +901,7 @@ merged_EA_completed <- merged_EA_completed %>%
   )
 
 
+
 #################################
 #### COMMON DATASET CREATION ####
 #################################
@@ -873,15 +924,14 @@ Dataset <- merged_EA_completed %>%
                 starts_with("AGE"),starts_with("new_weight"), 
                 starts_with("Score_Neg_Emotions"), 
                 starts_with("Score_Listlessness"), starts_with("LS"),
-                starts_with("SRS"), starts_with("Trust"), starts_with("Engagement")
-                 )
+                starts_with("SRS"), starts_with("Trust"), starts_with("Engagement"), 
+                starts_with("WES"),starts_with("PRS"))
 
 
 
-# 2) Reencode variablesby year
+# 2) Reencode variables by year
 
 # 2018
-
 columns_to_inspect <- c( "P18MODES", "P18D29", "PLINGU18", "P18D161", "OCCUPA18", "P18P10", "P18I01", "EDUCAT18", "P18C01", "CANTON18", "COM2_18", "P18E14" )
 column_classes <- sapply(Dataset[, columns_to_inspect], class)
 print(column_classes)
@@ -1481,7 +1531,6 @@ Dataset_wide %>%
   distinct() %>%
   n_distinct() #2333
 
-
 # Select the columns with IDPERS and scores for different years
 selected_cols <- Dataset_wide %>%
   dplyr::select(IDPERS, ends_with("18"), ends_with("19"), ends_with("20"), ends_with("21"))
@@ -1491,9 +1540,6 @@ pivoted_data <- selected_cols %>%
   pivot_longer(cols = -IDPERS,
                names_to = c(".value", "Year"),
                names_pattern = "(.*)(18|19|20|21)$")
-
-
-pivoted_data %>% tabyl(AGE, Year)
 
 
 pivoted_data <- pivoted_data %>%
@@ -1520,7 +1566,6 @@ Dataset_long$Year <- as.factor(Dataset_long$Year)
 
 
 
-
 write_xlsx(Dataset_long, path = "C:/Users/.../Created datasets/Dataset_long_MoA&MH&SC.xlsx")
 write_xlsx(Dataset_wide, path = "C:/Users/.../Created datasets/Dataset_wide_MoA&MH&SC.xlsx")
 
@@ -1542,7 +1587,7 @@ selected_variables <- Data[, c("LS_", "Score_Neg_Emotions_",
                                      "Score_Listlessness_")]
 selected_variables <- sapply(selected_variables, as.numeric)
 
-selected_variables_no_na<-na.omit(selected_variables) # same -> 3703 observations
+selected_variables_no_na<-na.omit(selected_variables)
 
 
 # Create the correlation matrix
@@ -1556,7 +1601,7 @@ colnames(correlation_matrix) <- colnames(selected_variables_no_na)
 for (i in 1:ncol(selected_variables_no_na)) {
   for (j in 1:ncol(selected_variables_no_na)) {
     cor_test <- cor.test(selected_variables_no_na[, i], selected_variables_no_na[, j], method = "pearson")
-    p_value <- p.adjust(cor_test$p.value, method = "bonferroni")
+    p_value <- p.adjust(cor_test$p.value, method = "holm")
     if (p_value < 0.001) {
       correlation_matrix[i, j] <- paste(round(cor_test$estimate, 3), "***", sep = "")
     } else if (p_value < 0.01) {
@@ -1589,7 +1634,7 @@ colnames(correlation_matrix_2) <- colnames(selected_variables_2)
 for (i in 1:ncol(selected_variables_2)) {
   for (j in 1:ncol(selected_variables_2)) {
     cor_test <- cor.test(selected_variables_2[, i], selected_variables_2[, j], method = "pearson")
-    p_value <- p.adjust(cor_test$p.value, method = "bonferroni")
+    p_value <- p.adjust(cor_test$p.value, method = "holm")
     if (p_value < 0.001) {
       correlation_matrix_2[i, j] <- paste(round(cor_test$estimate, 3), "***", sep = "")
     } else if (p_value < 0.01) {
@@ -1606,11 +1651,11 @@ for (i in 1:ncol(selected_variables_2)) {
 # 3)  Social Cohesion 
 
 # Select the variables of interest
-selected_variables_3 <- Data[, c("SRS_", "Trust_", 
+selected_variables_3 <- Data[, c("SRS_", "Trust_",
                                        "Engagement_")]
 selected_variables_3 <- sapply(selected_variables_3, as.numeric)
 
-selected_variables_no_na_3<-na.omit(selected_variables_3) # same -> 3703 observations
+selected_variables_no_na_3<-na.omit(selected_variables_3) 
 
 
 # Create the correlation matrix
@@ -1625,7 +1670,7 @@ colnames(correlation_matrix_3) <- colnames(selected_variables_no_na_3)
 for (i in 1:ncol(selected_variables_no_na_3)) {
   for (j in 1:ncol(selected_variables_no_na_3)) {
     cor_test <- cor.test(selected_variables_no_na_3[, i], selected_variables_no_na_3[, j], method = "pearson")
-    p_value <- p.adjust(cor_test$p.value, method = "bonferroni")
+    p_value <- p.adjust(cor_test$p.value, method = "holm")
     if (p_value < 0.001) {
       correlation_matrix_3[i, j] <- paste(round(cor_test$estimate, 3), "***", sep = "")
     } else if (p_value < 0.01) {

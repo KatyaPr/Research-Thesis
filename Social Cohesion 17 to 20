@@ -28,7 +28,7 @@ library(glmtoolbox)
 rm(list = ls())
 
 
-Data<-read_excel("C:/Users/olyai/Desktop/data stage/Created datasets/Social_cohesion_17_20_long.xlsx")
+Data<-read_excel("C:/Users/.../Created datasets/Social_cohesion_17_20_long.xlsx")
 Data %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) # 2121  unique IDPERS answered
 
 ###########################################

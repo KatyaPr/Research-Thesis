@@ -30,7 +30,7 @@ library(glmtoolbox)
 rm(list = ls())
 
 
-Data<-read_excel("C:/Users/olyai/Desktop/data stage/Created datasets/Dataset_long_MoA&MH&SC.xlsx")
+Data<-read_excel("C:/Users/.../Created datasets/Dataset_long_MoA&MH&SC.xlsx")
 
 Data %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) # 2333  unique IDPERS answered
 

@@ -1,0 +1,1137 @@
+##################################
+##################################
+########## MoA analysis ##########
+##################################
+##################################
+
+
+library(panelr)
+library(cowplot)
+library(tidyverse)
+library(readxl)
+library(lme4)
+library(survey)
+library(stats)
+library(janitor)
+library(dplyr)
+library(ggplot2)
+library(lmerTest)
+library(performance)
+library(effectsize)
+library(ggeffects) 
+library(sjPlot)
+library(codingMatrices)
+library(glmtoolbox)
+
+
+######################
+## Importing dataset #
+######################
+rm(list = ls())
+
+
+Data<-read_excel("C:/Users/olyai/Desktop/data stage/Created datasets/Dataset_long_MoA&MH&SC.xlsx")
+
+Data %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) # 2333  unique IDPERS answered
+
+
+###########################################
+####  Adjustment factors selection  #######
+###########################################
+
+# Age as numeric
+Data$AGE <- as.numeric(Data$AGE )
+# Financial satisfaction as numeric 
+Data$Finan_satisfaction_ <- as.numeric(Data$Finan_satisfaction_ )
+# Health_Status_ as numeric 
+Data$Health_Status_ <- as.numeric(Data$Health_Status_ )
+
+# Convert Interview_language_ to a factor
+Data$Interview_language_ <- as.factor(Data$Interview_language_ )
+levels(Data$Interview_language_)
+Data$Interview_language_ <- relevel(Data$Interview_language_, ref = "German")
+
+# Convert Gender & IDHOUS to a factor
+Data$Gender <- as.factor(Data$Gender)
+Data$IDHOUS <- as.factor(Data$IDHOUS)
+
+# Convert Mode_of_Data_Collection_ to a factor
+Data$Mode_of_Data_Collection_ <- as.factor(Data$Mode_of_Data_Collection_ )
+levels(Data$Mode_of_Data_Collection_)
+Data$Mode_of_Data_Collection_ <- relevel(Data$Mode_of_Data_Collection_, ref = "CATI")
+
+# Removing all NA in weights
+Data <- Data[complete.cases(Data$new_weight_), ]
+Data %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) # 2333
+
+MoA_Data <- Data[, c("IDPERS", "IDHOUS", "MoA_","new_weight_", "Year", "Score_Neg_Emotions_", "SRS_", "Finan_satisfaction_", "Gender", "Mode_of_Data_Collection_", "Interview_language_", "AGE")]
+
+# Removing all NA for MoA
+MoA_Data_Clean <- na.omit(MoA_Data) # 3705   12
+MoA_Data_Clean %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) # 2,062
+MoA_Data_Clean$wave<- as.factor(MoA_Data_Clean$Year)
+
+# Contrast treatment with code_diff
+# https://bookdown.org/pingapang9/linear_models_bookdown/contrasts.html
+#The contrasts are the successive differences of the 
+# treatment means, e.g. group 2 - group 1, group 3 - group 2, etc.
+
+MoA_Data_Clean$Year<-as.factor(MoA_Data_Clean$Year)
+contrasts(MoA_Data_Clean$Year) <- code_diff
+
+# For AGE i could only get the polynomial contrast for ^7 so I had to malke custom contrasts
+MoA_Data_Clean$AGE<-as.factor(MoA_Data_Clean$AGE)
+#lin <- c(-0.54006172,-0.38575837, -0.23145502, -0.07715167, 0.07715167, 0.23145502, 0.38575837, 0.54006172)
+#quad <- c(0.54006172,0.07715167, -0.23145502, -0.38575837, -0.38575837, -0.23145502,0.07715167, 0.54006172)
+#L <- rbind(lin, quad) # bind the rows together
+### Doesn't work so go for poly
+contrasts(MoA_Data_Clean$AGE) <- contr.poly
+
+
+##### Summary Stat ####
+
+summary_MoA <- Data %>% 
+  group_by(Year) %>% 
+  summarize(
+    mean = mean(MoA_, na.rm = T),
+    median = median(MoA_, na.rm = T ),
+    min = min(MoA_, na.rm = T ),
+    max = max(MoA_, na.rm = T ),
+    sd = sd(MoA_, na.rm = T), 
+    n = n()
+  )
+
+t <- ggplot(summary_MoA, aes(x = Year, y = mean)) +
+  geom_bar(stat = "identity", fill = "khaki") +
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.2) +
+  labs(title = "Markers of Adulhood", subtitle = "Non weightened results",
+       x = "Year",
+       y = "Mean + SD") +
+  theme_minimal()
+t<-t + geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "black", size = 3.5)
+
+summary_Fin_Indep <- Data %>% 
+  group_by(Year) %>% 
+  summarize(
+    mean = mean(Fin_Indep_, na.rm = T),
+    median = median(Fin_Indep_ , na.rm = T),
+    min = min(Fin_Indep_ , na.rm = T),
+    max = max(Fin_Indep_ , na.rm = T),
+    sd = sd(Fin_Indep_, na.rm = T), 
+    n = n()
+  )
+
+f <- ggplot(summary_Fin_Indep, aes(x = Year, y = mean)) +
+  geom_bar(stat = "identity", fill = "lavender") +
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.2) +
+  labs(title = "Financial Independance", subtitle = "Non weightened results",
+       x = "Year",
+       y = "Mean + SD") +
+  theme_minimal()
+f<-f + geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "black", size = 3.5)
+
+
+
+summary_Stab_R <- Data %>% 
+  group_by(Year) %>% 
+  summarize(
+    mean = mean(Stab_R_, na.rm = T),
+    median = median(Stab_R_ , na.rm = T),
+    min = min(Stab_R_ , na.rm = T),
+    max = max(Stab_R_ , na.rm = T),
+    sd = sd(Stab_R_, na.rm = T), 
+    n = n()
+  )
+
+s <- ggplot(summary_Stab_R, aes(x = Year, y = mean)) +
+  geom_bar(stat = "identity", fill = "lightpink2") +
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.2) +
+  labs(title = "Stable relationship", subtitle = "Non weightened results",
+       x = "Year",
+       y = "Mean + SD") +
+  theme_minimal()
+s<-s + geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "black", size = 3.5)
+
+
+
+summary_Ind_H <- Data %>% 
+  group_by(Year) %>% 
+  summarize(
+    mean = mean(Ind_H_, na.rm = T),
+    median = median(Ind_H_ , na.rm = T),
+    min = min(Ind_H_ , na.rm = T),
+    max = max(Ind_H_ , na.rm = T),
+    sd = sd(Ind_H_, na.rm = T), 
+    n = n()
+  )
+
+h <- ggplot(summary_Ind_H, aes(x = Year, y = mean)) +
+  geom_bar(stat = "identity", fill = "lavenderblush2") +
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.2) +
+  labs(title = "Independant Housing", subtitle = "Non weightened results",
+       x = "Year",
+       y = "Mean + SD") +
+  theme_minimal()
+h<-h + geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "black", size = 3.5)
+
+
+summary_Job<- Data %>% 
+  group_by(Year) %>% 
+  summarize(
+    mean = mean(Job_, na.rm = T),
+    median = median(Job_ , na.rm = T),
+    min = min(Job_ , na.rm = T),
+    max = max(Job_ , na.rm = T),
+    sd = sd(Job_, na.rm = T), 
+    n = n()
+  )
+
+j <- ggplot(summary_Job, aes(x = Year, y = mean)) +
+  geom_bar(stat = "identity", fill = "darkkhaki") +
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.2) +
+  labs(title = "Job", subtitle = "Non weightened results",
+       x = "Year",
+       y = "Mean + SD")+
+  theme_minimal()
+j<-j + geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "black", size = 3.5)
+
+
+summary_educ<- Data %>% 
+  group_by(Year) %>% 
+  summarize(
+    mean = mean(Finish_Educ_, na.rm = T),
+    median = median(Finish_Educ_, na.rm = T ),
+    min = min(Finish_Educ_, na.rm = T ),
+    max = max(Finish_Educ_ , na.rm = T),
+    sd = sd(Finish_Educ_, na.rm = T), 
+    n = n()
+  )
+
+e <- ggplot(summary_educ, aes(x = Year, y = mean)) +
+  geom_bar(stat = "identity", fill = "steelblue1") +
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.2) +
+  labs(title = "Finishing education", subtitle = "Non weightened results",
+       x = "Year",
+       y = "Mean + SD") +
+  theme_minimal()
+e <-e + geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "black", size = 3.5)
+
+cowplot::plot_grid(t,f,s, e, h, j)
+
+# Plotting the percentages
+
+DataX <- Data %>%
+  group_by(Year, MoA_) %>%
+  summarize(count = n()) %>%
+  group_by(Year) %>%
+  mutate(percentage = count / sum(count) * 100)
+
+ggplot(DataX, aes(x = MoA_, y = percentage, fill = MoA_)) +
+  geom_bar(stat = "identity") +
+  facet_grid(~Year) +
+  labs(title = "Marker of Adulthood responses by Year", x = "Score MoA", y = "Percentage") +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +  # Format y-axis as percentage
+  theme_minimal()
+
+
+
+############ Test to see is we need a stratification ###########
+
+# W
+MoA_by_gender <- lmer(MoA_ ~ Gender+ (1 | IDPERS) + (1|IDPERS:IDHOUS), weights = new_weight_, data = MoA_Data_Clean)
+tab_model(MoA_by_gender)
+# Estimate :-0.20, IC95%	= (-0.32;-0.08	),	p = 0.002
+# NW
+MoA_by_gender_2 <- lmer(MoA_ ~ Gender+ (1 | IDPERS) + (1|IDPERS:IDHOUS), data = MoA_Data_Clean)
+tab_model(MoA_by_gender_2)
+# Estimate :-0.24, IC95%	= (-0.36;-0.11	),	p = <0.001
+
+###################################################
+########### Gender Stratified analysis ############
+###################################################
+
+# 1st I need to construct 2 datasets: one for Female, other for Male 
+# and recalculate the weight
+
+MoA_Data_Clean %>% tabyl(Gender) %>% adorn_totals("row")
+# 1952  Female
+# 1753  Male
+
+# 2) Calculate the sum of the old weights for the subsample
+MoA_Data_Clean %>% 
+  filter(Gender == "Female") %>% 
+  summarise(sum(new_weight_)) # 1499
+MoA_Data_Clean %>% 
+  filter(Gender == "Male") %>% 
+  summarise(sum(new_weight_)) # 2063
+
+MoA_Data_Clean_G <- MoA_Data_Clean 
+# 3) Create a new column for each gender
+MoA_Data_Clean_G <- MoA_Data_Clean_G %>%
+  mutate(weight_by_gender = ifelse(Gender == "Female", (1952 * (new_weight_ /1499)), 
+                                   (1753 * (new_weight_ /2063))))
+
+# Verification à la main
+
+MoA_Data_Clean_G %>% filter(IDPERS == 27104 & Year == 2018) %>% tabyl (new_weight_, Gender) # 0.6844214
+MoA_Data_Clean_G %>% filter(IDPERS == 27104 & Year == 2018) %>% tabyl (weight_by_gender) # 0.5815757  
+(0.6844214/2063) * 1753
+
+MoA_Data_Clean_G %>% filter(IDPERS == 181103 & Year == 2019) %>% tabyl (new_weight_, Gender) # 0.4820096 
+(0.4820096 /1499)*1952
+MoA_Data_Clean_G %>% filter(IDPERS == 181103 & Year == 2019) %>% tabyl (weight_by_gender) # 0.6276736  
+
+
+MoA_Data_Clean_F<-MoA_Data_Clean_G %>% filter(Gender == "Female")
+MoA_Data_Clean_M<-MoA_Data_Clean_G %>% filter(Gender == "Male")
+
+################ 
+##### MEM ######
+################ 
+
+
+MEM_MoA_W_F <- lmer(MoA_ ~ Year +  Interview_language_ + Mode_of_Data_Collection_+ AGE +Finan_satisfaction_ + Score_Neg_Emotions_+ SRS_+ (1 | IDPERS) + (1|IDPERS:IDHOUS), weights = weight_by_gender, data = MoA_Data_Clean_F)
+equatiomatic::extract_eq(MEM_MoA_W_F)
+tab_model(MEM_MoA_W_F)
+summary(MEM_MoA_W_F)
+
+check_model(MEM_MoA_W_F)
+check_autocorrelation(MEM_MoA_W_F) #Autocorrelated residuals detected (p < .001).
+check_outliers(MEM_MoA_W_F) #OK: No outliers detected. Based on the following method and threshold: cook (0.9),  For variable: (Whole model)
+check_heteroscedasticity(MEM_MoA_W_F) #Error variance appears to be homoscedastic (p = 0.906).
+check_normality(MEM_MoA_W_F)#Non-normality of residuals detected (p < .001).
+performance:: icc(MEM_MoA_W_F, by_group = T) #0.777
+
+# Group         |   ICC
+---------------------
+# IDPERS:IDHOUS | 0.751  
+# IDPERS        | 0.026
+
+performance:: icc(lmer(MoA_ ~ Year +  Interview_language_ + Mode_of_Data_Collection_+ AGE +Finan_satisfaction_ + Score_Neg_Emotions_+ SRS_+ (1 | IDPERS) , weights = weight_by_gender, data = MoA_Data_Clean_F), by_group = T)
+#0.721
+performance:: icc(lmer(MoA_ ~ Year + Interview_language_ + Mode_of_Data_Collection_+ AGE +Finan_satisfaction_ + Score_Neg_Emotions_+ SRS_ + (1|IDPERS:IDHOUS) , weights = weight_by_gender, data = MoA_Data_Clean_F), by_group = T)
+#0.777
+performance:: icc(lmer(MoA_ ~ Year + Interview_language_ + Mode_of_Data_Collection_+ AGE +Finan_satisfaction_ + Score_Neg_Emotions_+ SRS_+(1 | IDHOUS) , weights = weight_by_gender, data = MoA_Data_Clean_F), by_group = T)
+#0.747
+
+# Non weightened
+
+MEM_MoA_UnW_F <- lmer(MoA_ ~ Year + Score_Neg_Emotions_+ SRS_+ Finan_satisfaction_ + Interview_language_ + Mode_of_Data_Collection_ + AGE + (1 | IDPERS) + (1|IDPERS:IDHOUS), data = MoA_Data_Clean_F)
+tab_model(MEM_MoA_UnW_F)
+summary(MEM_MoA_UnW_F)
+
+performance:: icc(MEM_MoA_UnW_F, by_group = T) # 0.732
+check_model(MEM_MoA_UnW_F)
+check_autocorrelation(MEM_MoA_UnW_F) #Autocorrelated residuals detected (p < .001).
+check_outliers(MEM_MoA_UnW_F) #OK: No outliers detected. Based on the following method and threshold: cook (0.9),  For variable: (Whole model)
+check_heteroscedasticity(MEM_MoA_UnW_F) #Error variance appears to be homoscedastic (p = 0.813).
+check_normality(MEM_MoA_UnW_F)#Non-normality of residuals detected (p = 0.010).
+
+performance:: icc(lmer(MoA_ ~ Year + Interview_language_ + Mode_of_Data_Collection_+ AGE +Finan_satisfaction_ + Score_Neg_Emotions_+ SRS_+ (1 | IDPERS) , data = MoA_Data_Clean_F), by_group = T)
+# 0.619
+performance:: icc(lmer(MoA_ ~ Year + Interview_language_ + Mode_of_Data_Collection_+ AGE +Finan_satisfaction_ + Score_Neg_Emotions_+ SRS_ + (1|IDPERS:IDHOUS) , data = MoA_Data_Clean_F), by_group = T)
+# 0.732
+performance:: icc(lmer(MoA_ ~ Year +  Interview_language_ + Mode_of_Data_Collection_+ AGE +Finan_satisfaction_ + Score_Neg_Emotions_+ SRS_+(1 | IDHOUS) ,data = MoA_Data_Clean_F), by_group = T)
+# 0.697
+
+
+###################
+### GEE Female ####
+###################
+
+
+MoA_Clean_F_pd <- panel_data(MoA_Data_Clean_F, id = IDPERS, wave = wave) # Dataset preparation -> need to be clean
+MoA_Clean_F_pd <- MoA_Clean_F_pd[order(MoA_Clean_F_pd$IDPERS), ]
+MoA_Clean_F_pd <- MoA_Clean_F_pd[order(MoA_Clean_F_pd$wave), ]
+
+MoA_f = formula(MoA_ ~ Year +  Interview_language_ + Mode_of_Data_Collection_+ AGE +Finan_satisfaction_ + Score_Neg_Emotions_+ SRS_)
+
+### Weigtened data
+
+g1 <- glmgee(MoA_f,
+             data = MoA_Clean_F_pd,
+             weights = weight_by_gender,
+             id = (IDPERS:IDHOUS),
+             corstr = "unstructured") 
+
+summary(g1)
+
+g2 <- update(g1,corstr = "exchangeable")   
+summary(g2)
+
+### Non weigtened data
+
+g3 <- glmgee(MoA_f,
+             data = MoA_Clean_F_pd,
+             id = (IDPERS:IDHOUS),
+             corstr = "unstructured")  
+summary(g3)
+
+g4 <- update(g3,corstr = "exchangeable") 
+summary(g4) 
+
+
+## Function that i created to make a table with criterions #GLMGEE
+model_selection_function <- function(model1, model2, model3, model4, verbose = FALSE) {
+  a <- CIC(model1, model2, model3, model4, verbose = verbose)
+  b <- QIC(model1, model2, model3, model4, verbose = verbose)
+  d <- RJC(model1, model2, model3, model4, verbose = verbose)
+  e <- PAC(model1, model2, model3, model4, verbose = verbose)
+  
+  df <- data.frame(CIC = a, QIC = b[,"QIC"], RJC = d[,"RJC"], PAC = e[, "PAC"])
+  return(df)
+}
+
+# Call the function with your GEE models 
+model_selection_function(g1, g2, g3, g4)
+
+
+######################################################################
+##### Weightened analysis, exchangeable WCS (g2 as initial model) ####
+######################################################################
+MoA_Clean_F_pd_w<-MoA_Clean_F_pd
+
+##### removing influential obs based on Cooks.d
+
+cooks_d <-cooks.distance(g2, level = c("observations")) # 1952 (as number of total id)
+
+cutoff =4/length(cooks_d)
+
+# Identify influential observations
+influential_obs<-which(cooks_d > cutoff) # 86 id
+MoA_Clean_F_pd_w<-MoA_Clean_F_pd_w[-(which(cooks_d > cutoff)), ] # 1866 obs
+
+g2.2 <- update(g2,data = MoA_Clean_F_pd_w)
+summary(g2.2) 
+confint(g2.2)
+raw_pvalues <- c(1.0981e-09, 0.00425445, 0.87017832 ,0.70973380)
+adjusted_pvalues <- p.adjust(raw_pvalues, method = "holm") 
+#4.392400e-09 1.276335e-02 1.000000e+00 1.000000e+0
+
+###############
+##### plot ####
+###############
+
+# 1) Create an unadjusted model
+
+g2.2_unad<- glmgee(MoA_ ~ Year,
+                   data = MoA_Clean_F_pd_w,
+                   weights = weight_by_gender,
+                   id = (IDPERS:IDHOUS),
+                   corstr = "exchangeable") 
+summary(g2.2_unad)
+raw_pvalues <- c(2.22e-16, 0.911213, 0.075792,  0.022760)
+adjusted_pvalues <- p.adjust(raw_pvalues, method = "holm")
+confint(g2.2_unad)
+# Estimates: 1.90108  : -0.00742  ;0.11023 ;0.21755      
+# 8.88000e-16 9.11213e-01 1.51584e-01 6.82800e-02
+
+# 2) Create an survey design data with predicted values
+MoA_Clean_F_pd_w$predicted_ad <- predict(g2.2, type = "link")
+MoA_Clean_F_pd_w$predicted_unad <- predict(g2.2_unad, type = "link")
+
+survey_design_w<- svydesign(ids = ~IDPERS, weights = MoA_Clean_F_pd_w$weight_by_gender, data = MoA_Clean_F_pd_w)
+
+# 3) Plot the models
+
+# Observed
+
+
+observed_means <- svyby(~MoA_, ~Year, design = survey_design_w, FUN = svymean)
+y <- svyby(~MoA_, by = ~Year, design = survey_design_w, svyvar) 
+sd <- sqrt(y$MoA_)
+observed_means$sd <- sd
+observed_means$n<-svytotal(~Year, design = survey_design_w)
+colnames(observed_means) <- c("Year", "mean", "se", "sd", "n")
+
+
+#Hedges g for 2018 vs 2019
+(1.953119 - 1.846994) / sqrt(((365.3514 - 1) * 1.435757^2 + 
+                               (328.4491 - 1) * 1.462952^2) / 
+                              (365.3514 + 328.4491 - 2))
+# 0.0732557
+
+#2019 vs 2020
+(1.846994 - 1.844983) / sqrt(((328.4491 - 1) * 1.462952 ^2 + 
+                               (727.1892 - 1) * 1.433592^2) / 
+                              (328.4491 + 727.1892 - 2))
+# 0.001393836
+
+#2021 vs 2021
+(1.844983- 1.765056)/ sqrt(((727.1892 - 1) * 1.433592^2 + 
+                              (136.2043 - 1) * 1.343410^2) / 
+                             (727.1892 + 136.2043 - 2))
+# 0.05629391
+
+# ES for Mode_of_Data_Collection_
+
+calculate_hedges_g <- function(data, grouping_var, response_var) {
+  # Ensure that the grouping variable is a factor
+  data[[grouping_var]] <- as.factor(data[[grouping_var]])
+  
+  # Calculate means and standard deviations by group
+  observed_means <- svyby(as.formula(paste("~", response_var)), 
+                          as.formula(paste("~", grouping_var)), 
+                          design = survey_design_w, FUN = svymean)
+  
+  r <- svyby(as.formula(paste("~", response_var)), 
+             by = as.formula(paste("~", grouping_var)), 
+             design = survey_design_w, svyvar) 
+  sd <- sqrt(r[, 2])
+  observed_means$sd <- sd
+  observed_means$n <- svytotal(as.formula(paste("~", grouping_var)), design = survey_design_w)
+  colnames(observed_means) <- c("grouping_var", "mean", "se", "sd", "n")
+  
+  # Calculate Hedges' g effect size
+  pooled_sd <- sqrt(((observed_means$n[1] - 1) * observed_means$sd[1]^2 + 
+                       (observed_means$n[2] - 1) * observed_means$sd[2]^2) / 
+                      (observed_means$n[1] + observed_means$n[2] - 2))
+  g <- (observed_means$mean[2] - observed_means$mean[1]) / pooled_sd
+  
+  return(list(observed_means = observed_means, hedges_g = g))
+}
+
+
+calculate_hedges_g(data = survey_design_w,
+                   grouping_var = "Mode_of_Data_Collection_",
+                   response_var = "MoA_")
+
+#0.06792353
+
+
+# ES for Interview_language_
+calculate_hedges_g(data = survey_design_w,
+                   grouping_var = "Interview_language_",
+                   response_var = "MoA_")
+
+#-0.4952946
+
+# ES for AGE linear + quadratic)
+AGE_l <- contr.poly( 8 )[ , 1 ]
+AGE_q <- contr.poly( 8 )[ , 2 ]
+
+# AGE^1 term (linear)
+MoA_Clean_F_pd_w$AGE_l <- AGE_l[ match( MoA_Clean_F_pd_w$AGE , seq( 18 , 25 , 1 ) ) ]
+# AGE^2 term (quadratic)
+MoA_Clean_F_pd_w$AGE_q <- AGE_q[ match( MoA_Clean_F_pd_w$AGE , seq( 18 , 25 , 1 ) ) ]
+des <- 
+  svydesign(
+    id = ~IDPERS , 
+    data = MoA_Clean_F_pd_w , 
+    weights = MoA_Clean_F_pd_w$weight_by_gender  )
+
+svycor(~MoA_ + AGE_l, design = des)
+#0.54
+r_to_d(0.54)
+#1.283171
+
+svycor(~MoA_ + AGE_q, design = des)
+#0.05
+r_to_d(0.05)
+#0.1001252
+
+
+# ES for Finan_satisfaction_
+svycor(~MoA_ + Finan_satisfaction_, design = survey_design_w)
+#0.01
+r_to_d(0.01)
+#0.020001
+
+# ES for Score_Neg_Emotions_
+svycor(~MoA_ + Score_Neg_Emotions_, design = survey_design_w)
+#-0.22
+r_to_d(-0.22)
+#-0.4510508
+
+# ES for SRS_
+svycor(~MoA_ + SRS_, design = survey_design_w)
+#0.15
+r_to_d(0.15)
+#0.303433
+
+
+
+# Calculate the weighted mean from ad model, and effect size
+
+observed_means_ad <- svyby(~predicted_ad, ~Year, design = survey_design_w, FUN = svymean)
+c <- svyby(~predicted_ad, by = ~Year, design = survey_design_w, svyvar) 
+sd <- sqrt(c$fit)
+observed_means_ad$sd <- sd
+observed_means_ad$n<-svytotal(~Year, design = survey_design_w)
+CI<-confint(svyby(~predicted_ad, ~Year, design = survey_design_w, FUN = svymean))
+observed_means_ad <- cbind(observed_means_ad, CI[,"2.5 %"], CI[,"97.5 %"])
+colnames(observed_means_ad) <- c("Year", "mean", "se", "sd", "n","CI_low", "CI_high")
+
+
+# Calculate the weighted mean from unad model
+
+observed_means_unad <- svyby(~predicted_unad, ~Year, design = survey_design_w, FUN = svymean)
+r <- svyby(~predicted_unad, by = ~Year, design = survey_design_w, svyvar) 
+sd <- sqrt(r$fit)
+observed_means_unad$sd <- sd
+CI<-confint(svyby(~observed_means_unad, ~Year, design = survey_design_w, FUN = svymean))
+observed_means_unad <- cbind(observed_means_unad, CI[,"2.5 %"], CI[,"97.5 %"])
+colnames(observed_means_unad) <- c("Year", "mean", "se", "sd", "n","CI_low", "CI_high")
+
+
+# Combine the data
+
+combined_data_x <- rbind(
+  transform(observed_means_ad, Model = "Adjusted model"),
+  transform(observed_means_unad, Model = "Crew model")
+)
+
+ggplot(combined_data_x, aes(x = Year, y = mean, color = Model, group = Model)) +
+  geom_line() +
+  geom_point(size = 3) +
+  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "black", size = 5) +  # Add values on the points
+  scale_color_manual(values = c( "Adjusted model" = "deeppink3", "Crew model" = "slateblue")) +  # Customize colors
+  labs(x = "Year", y = "Markers of Adulthood Score [0;5] ", color = "GEE model", title = "Evolution of markers of adulhood", subtitle = "GEE model, weightened female data") +
+  coord_cartesian(ylim = c(1.6,2.2)) +
+  theme_minimal()
+
+
+observed_plot <- ggplot(observed_means, aes(x = Year, y = mean)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  geom_point(color = "lightsalmon", size = 3) +
+  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "lightsalmon", size = 5) +
+  labs(x = "Year", y="Observation")+ 
+  coord_cartesian(ylim = c(1.5,2)) 
+
+predicted_ad <- ggplot(observed_means_ad, aes(x = Year, y = mean)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  geom_point(color = "plum4", size = 3) +
+  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "plum4", size = 5) +
+  labs(x = "Year", y = " Adjusted model")+ 
+  coord_cartesian(ylim = c(1.5,2)) 
+
+predicted_unad <- ggplot(observed_means_unad, aes(x = Year, y = mean)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  geom_point(color = "skyblue3", size = 3) +
+  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "skyblue3", size = 5) +
+  labs(x = "Year", y = " Unadjasted model")+ 
+  coord_cartesian(ylim = c(1.5,2)) 
+
+title_plot <- ggdraw() + draw_label("Markers of Adulthood, weightened female data", fontface = 'bold')
+cowplot::plot_grid(title_plot, observed_plot, predicted_ad, predicted_unad)
+
+
+########################################################################
+##### Unweightened analysis, exchangeable WCS (g4 as initial model) ####
+########################################################################
+
+MoA_Clean_F_pd_u<-MoA_Clean_F_pd
+
+##### removing influential obs based on Cooks.d
+
+cooks_d <-cooks.distance(g4, level = c("observations")) 
+
+cutoff =4/length(cooks_d)
+
+# Identify influential observations
+influential_obs<-which(cooks_d > cutoff) # 143 id
+MoA_Clean_F_pd_u<-MoA_Clean_F_pd_u[-(which(cooks_d > cutoff)), ] # 1809 obs
+
+g4.2 <- update(g4,data = MoA_Clean_F_pd_u)
+summary(g4.2) 
+raw_pvalues <- c(2.22e-16, 5.7093e-06, 2.3692e-05,0.0749290)
+adjusted_pvalues <- p.adjust(raw_pvalues, method = "holm") 
+# 8.88000e-16 1.71279e-05 4.73840e-05 0.074929
+confint(g4.2)
+
+###############
+##### plot ####
+###############
+
+# 1) Create an unadjusted model
+
+g4.2_unad<- glmgee(MoA_ ~ Year,
+                   data = MoA_Clean_F_pd_u,
+                   id = (IDPERS:IDHOUS),
+                   corstr = "exchangeable") 
+summary(g4.2_unad)
+raw_pvalues <- c(2.22e-16, 0.17351, 0.24427, 1.3163e-05)
+adjusted_pvalues <- p.adjust(raw_pvalues, method = "holm") 
+# Estimates:1.96769       ;0.05937      ; 0.05069      ; 0.16376         
+# 8.8800e-16 3.4702e-01 3.4702e-01 3.9489e-05
+
+
+# 2) Create an survey design data with predicted values
+MoA_Clean_F_pd_u$predicted_ad <- predict(g4.2, type = "link")
+MoA_Clean_F_pd_u$predicted_unad <- predict(g4.2_unad, type = "link")
+
+survey_design_u<- svydesign(ids = ~IDPERS, data = MoA_Clean_F_pd_u)
+
+# 3) Plot the models
+
+# Observed
+observed_means <- svyby(~MoA_, ~Year, design = survey_design_u, FUN = svymean)
+y <- svyby(~MoA_, by = ~Year, design = survey_design_u, svyvar) 
+sd <- sqrt(y$MoA_)
+observed_means$sd <- sd
+colnames(observed_means) <- c("Year", "mean", "se", "sd")
+
+# Calculate the weighted mean from ad model
+observed_means_ad <- svyby(~predicted_ad, ~Year, design = survey_design_u, FUN = svymean)
+c <- svyby(~predicted_ad, by = ~Year, design = survey_design_u, svyvar) 
+sd <- sqrt(c$fit)
+observed_means_ad$sd <- sd
+colnames(observed_means_ad) <- c("Year", "mean", "se", "sd")
+
+
+# Calculate the weighted mean from unad model
+observed_means_unad <- svyby(~predicted_unad, ~Year, design = survey_design_u, FUN = svymean)
+r <- svyby(~predicted_unad, by = ~Year, design = survey_design_u, svyvar) 
+sd <- sqrt(r$fit)
+observed_means_unad$sd <- sd
+colnames(observed_means_unad) <- c("Year", "mean", "se", "sd")
+
+# Combine the data
+
+combined_data_x <- rbind(
+  transform(observed_means_ad, Model = "Adjusted model"),
+  transform(observed_means_unad, Model = "Raw model")
+)
+
+ggplot(combined_data_x, aes(x = Year, y = mean, color = Model, group = Model)) +
+  geom_line() +
+  geom_point(size = 3) +
+  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "black", size = 5) +  # Add values on the points
+  scale_color_manual(values = c( "Adjusted model" = "deeppink3", "Raw model" = "slateblue")) +  # Customize colors
+  labs(x = "Year", y = "Markers of Adulthood Score [0;5] ", color = "GEE model", title = "Evolution of markers of adulhood ", subtitle = "GEE model (Exchangeable WCS), not weightened female data") +
+  coord_cartesian(ylim = c(1.6,2.3)) +
+  theme_minimal()
+
+observed_plot <- ggplot(observed_means, aes(x = Year, y = mean)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  geom_point(color = "lightsalmon", size = 3) +
+  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "lightsalmon", size = 5) +
+  labs(x = "Year", y="Observation")+ 
+  coord_cartesian(ylim = c(1.5,2.5)) 
+
+predicted_ad <- ggplot(observed_means_ad, aes(x = Year, y = mean)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  geom_point(color = "plum4", size = 3) +
+  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "plum4", size = 5) +
+  labs(x = "Year", y = " Adjusted model")+ 
+  coord_cartesian(ylim = c(1.5,2.5)) 
+
+predicted_unad <- ggplot(observed_means_unad, aes(x = Year, y = mean)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  geom_point(color = "skyblue3", size = 3) +
+  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "skyblue3", size = 5) +
+  labs(x = "Year", y = " Unadjasted model")+ 
+  coord_cartesian(ylim = c(1.5,2.5)) 
+
+
+title_plot <- ggdraw() + draw_label("Markers of Adulthood, non weightened female data", fontface = 'bold')
+cowplot::plot_grid(title_plot, observed_plot, predicted_ad, predicted_unad)
+
+
+#####################
+##### MEM Male ######
+#####################
+rm(list = setdiff(ls(), c("MoA_Data_Clean_M", "MoA_f", "calculate_hedges_g", "model_selection_function")))
+
+
+MEM_MoA_W_M <- lmer(MoA_ ~ Year +  Interview_language_ + Mode_of_Data_Collection_+ AGE +Finan_satisfaction_ + Score_Neg_Emotions_+ SRS_+ (1 | IDPERS) + (1|IDPERS:IDHOUS), weights = weight_by_gender, data = MoA_Data_Clean_M)
+tab_model(MEM_MoA_W_M)
+summary(MEM_MoA_W_M)
+
+check_model(MEM_MoA_W_M)
+check_autocorrelation(MEM_MoA_W_M) #Autocorrelated residuals detected (p < .001).
+check_outliers(MEM_MoA_W_M) #OK: No outliers detected. Based on the following method and threshold: cook (0.9),  For variable: (Whole model)
+check_heteroscedasticity(MEM_MoA_W_M) #Error variance appears to be homoscedastic (p = 0.810).
+check_normality(MEM_MoA_W_M)#Non-normality of residuals detected (p < .001).
+performance:: icc(MEM_MoA_W_M, by_group = T) #0.725
+
+# Group         |   ICC
+---------------------
+  # IDPERS:IDHOUS | 0.477  
+  # IDPERS        | 0.248
+  
+  
+performance:: icc(lmer(MoA_ ~ Year +  Interview_language_ + Mode_of_Data_Collection_+ AGE +Finan_satisfaction_ + Score_Neg_Emotions_+ SRS_+ (1 | IDPERS) , weights = weight_by_gender, data = MoA_Data_Clean_M), by_group = T)
+#0.670
+performance:: icc(lmer(MoA_ ~ Year + Interview_language_ + Mode_of_Data_Collection_+ AGE +Finan_satisfaction_ + Score_Neg_Emotions_+ SRS_ + (1|IDPERS:IDHOUS) , weights = weight_by_gender, data = MoA_Data_Clean_M), by_group = T)
+#0.726
+performance:: icc(lmer(MoA_ ~ Year + Interview_language_ + Mode_of_Data_Collection_+ AGE +Finan_satisfaction_ + Score_Neg_Emotions_+ SRS_+(1 | IDHOUS) , weights = weight_by_gender, data = MoA_Data_Clean_M), by_group = T)
+#0.659
+
+# Non weightened
+
+MEM_MoA_UnW_M <- lmer(MoA_ ~ Year + Score_Neg_Emotions_+ SRS_+ Finan_satisfaction_ + Interview_language_ + Mode_of_Data_Collection_ + AGE + (1 | IDPERS) + (1|IDPERS:IDHOUS), data = MoA_Data_Clean_M)
+tab_model(MEM_MoA_UnW_M)
+summary(MEM_MoA_UnW_M)
+
+performance:: icc(MEM_MoA_UnW_M, by_group = T) # 0.698
+check_model(MEM_MoA_UnW_M)
+check_autocorrelation(MEM_MoA_UnW_M) #Autocorrelated residuals detected (p < .001).
+check_outliers(MEM_MoA_UnW_M) #OK: No outliers detected. Based on the following method and threshold: cook (0.9),  For variable: (Whole model)
+check_heteroscedasticity(MEM_MoA_UnW_M) #Error variance appears to be homoscedastic (p = 0.725).
+check_normality(MEM_MoA_UnW_M)#Non-normality of residuals detected (p = 0.010).
+
+performance:: icc(lmer(MoA_ ~ Year + Interview_language_ + Mode_of_Data_Collection_+ AGE +Finan_satisfaction_ + Score_Neg_Emotions_+ SRS_+ (1 | IDPERS) , data = MoA_Data_Clean_M), by_group = T)
+# 0.635
+performance:: icc(lmer(MoA_ ~ Year + Interview_language_ + Mode_of_Data_Collection_+ AGE +Finan_satisfaction_ + Score_Neg_Emotions_+ SRS_ + (1|IDPERS:IDHOUS) , data = MoA_Data_Clean_M), by_group = T)
+# 0.699
+performance:: icc(lmer(MoA_ ~ Year +  Interview_language_ + Mode_of_Data_Collection_+ AGE +Finan_satisfaction_ + Score_Neg_Emotions_+ SRS_+(1 | IDHOUS) ,data = MoA_Data_Clean_M), by_group = T)
+# 0.633
+
+
+###################
+### GEE Male ######
+###################
+
+MoA_Clean_M_pd <- panel_data(MoA_Data_Clean_M, id = IDPERS, wave = wave) # Dataset preparation -> need to be clean
+MoA_Clean_M_pd <- MoA_Clean_M_pd[order(MoA_Clean_M_pd$IDPERS), ]
+MoA_Clean_M_pd <- MoA_Clean_M_pd[order(MoA_Clean_M_pd$wave), ]
+
+### Weigtened data
+
+g1 <- glmgee(MoA_f,
+             data = MoA_Clean_M_pd,
+             weights = weight_by_gender,
+             id = (IDPERS:IDHOUS),
+             corstr = "unstructured") 
+
+summary(g1)
+
+g2 <- update(g1,corstr = "exchangeable")   
+summary(g2)
+
+### Non weigtened data
+
+g3 <- glmgee(MoA_f,
+             data = MoA_Clean_M_pd,
+             id = (IDPERS:IDHOUS),
+             corstr = "unstructured")  
+summary(g3)
+
+g4 <- update(g3,corstr = "exchangeable") 
+summary(g4) 
+
+
+## Make a table with criterions 
+model_selection_function(g1, g2, g3, g4)
+
+
+######################################################################
+##### Weightened analysis, exchangeable WCS (g2 as initial model) ####
+######################################################################
+MoA_Clean_M_pd_w<-MoA_Clean_M_pd
+
+##### removing influential obs based on Cooks.d
+
+cooks_d <-cooks.distance(g2, level = c("observations")) # 1753 (as number of total id)
+
+cutoff =4/length(cooks_d)
+
+# Identify influential observations
+influential_obs<-which(cooks_d > cutoff) # 92 id
+MoA_Clean_M_pd_w<-MoA_Clean_M_pd_w[-(which(cooks_d > cutoff)), ] # 1661 obs
+
+g2.2 <- glmgee(MoA_f,
+               data = MoA_Clean_M_pd_w,
+               weights = weight_by_gender,
+               id = (IDPERS:IDHOUS),
+               corstr = "exchangeable") 
+
+summary(g2.2) 
+confint(g2.2)
+raw_pvalues <- c(1.9952e-07, 0.02825383, 0.76299288 ,0.21118999)
+adjusted_pvalues <- p.adjust(raw_pvalues, method = "holm") 
+#7.980800e-07 0.08476149  0.7629929 0.4223800
+
+
+###############
+##### plot ####
+###############
+
+# 1) Create an unadjusted model
+
+g2.2_unad<- glmgee(MoA_ ~ Year,
+                   data = MoA_Clean_M_pd_w,
+                   weights = weight_by_gender,
+                   id = (IDPERS:IDHOUS),
+                   corstr = "exchangeable") 
+summary(g2.2_unad)
+confint(g2.2_unad)
+raw_pvalues <- c(2.22e-16, 0.7079872, 0.1066906,  0.0051082)
+adjusted_pvalues <- p.adjust(raw_pvalues, method = "holm")
+# Estimates: 1.73087; -0.02715 ;0.10577;0.14658        
+# 8.880000e-16 7.079872e-01 2.133812e-01 1.532460e-02
+
+# 2) Create an survey design data with predicted values
+MoA_Clean_M_pd_w$predicted_ad <- predict(g2.2, type = "link")
+MoA_Clean_M_pd_w$predicted_unad <- predict(g2.2_unad, type = "link")
+
+survey_design_w<- svydesign(ids = ~IDPERS, weights = MoA_Clean_M_pd_w$weight_by_gender, data = MoA_Clean_M_pd_w)
+
+# 3) Plot the models
+
+# Observed
+
+observed_means <- svyby(~MoA_, ~Year, design = survey_design_w, FUN = svymean)
+y <- svyby(~MoA_, by = ~Year, design = survey_design_w, svyvar) 
+sd <- sqrt(y$MoA_)
+observed_means$sd <- sd
+observed_means$n <- svytotal(~Year, design = survey_design_w)
+colnames(observed_means) <- c("Year", "mean", "se", "sd","n")
+
+#2018 vs 2019
+(1.781165 - 1.610136) / sqrt(((258.7479 - 1) * 1.325980^2 + 
+                               (226.1987 - 1) * 1.252177^2) / 
+                              (258.7479 + 226.1987 - 2))
+#0.1323661
+
+#2019 vs 2020
+(1.610136 - 1.626724) / sqrt(((226.1987 - 1) * 1.252177^2 + 
+                               (499.0930 - 1) * 1.301088^2) / 
+                              (226.1987 + 499.0930 - 2))
+# -0.01289832
+
+#2020 vs 2021
+(1.626724- 1.766835)/ sqrt(((499.0930 - 1) * 1.301088^2 + 
+                              (466.6125 - 1) * 1.328136^2) / 
+                             (499.0930 + 466.6125 - 2))
+# -0.1066111
+
+# ES for Mode_of_Data_Collection_
+
+calculate_hedges_g(data = survey_design_w,
+                   grouping_var = "Mode_of_Data_Collection_",
+                   response_var = "MoA_")
+
+#0.06459004
+
+
+# ES for Interview_language_
+calculate_hedges_g(data = survey_design_w,
+                   grouping_var = "Interview_language_",
+                   response_var = "MoA_")
+
+#-0.373137
+
+# ES for AGE
+AGE_l <- contr.poly( 8 )[ , 1 ]
+AGE_q <- contr.poly( 8 )[ , 2 ]
+
+# AGE^1 term (linear)
+MoA_Clean_M_pd_w$AGE_l <- AGE_l[ match( MoA_Clean_M_pd_w$AGE , seq( 18 , 25 , 1 ) ) ]
+# AGE^2 term (quadratic)
+MoA_Clean_M_pd_w$AGE_q <- AGE_q[ match( MoA_Clean_M_pd_w$AGE , seq( 18 , 25 , 1 ) ) ]
+des <- 
+  svydesign(
+    id = ~IDPERS , 
+    data = MoA_Clean_M_pd_w , 
+    weights = MoA_Clean_M_pd_w$weight_by_gender  )
+
+svycor(~MoA_ + AGE_l, design = des)
+#0.48
+r_to_d(0.48)
+#1.094306
+
+svycor(~MoA_ + AGE_q, design = des)
+#0.09
+r_to_d(0.09)
+#0.1807335
+
+
+# ES for Finan_satisfaction_
+svycor(~MoA_ + Finan_satisfaction_, design = survey_design_w)
+#-0.08
+r_to_d(-0.08)
+#-0.1605145
+
+# ES for Score_Neg_Emotions_
+svycor(~MoA_ + Score_Neg_Emotions_, design = survey_design_w)
+#-0.09
+r_to_d(-0.09)
+#-0.1807335
+
+# ES for SRS_
+svycor(~MoA_ + SRS_, design = survey_design_w)
+#0.11
+r_to_d(0.11)
+#0.2213432
+
+# Calculate the weighted mean from ad model
+
+observed_means_ad <- svyby(~predicted_ad, ~Year, design = survey_design_w, FUN = svymean)
+c <- svyby(~predicted_ad, by = ~Year, design = survey_design_w, svyvar) 
+sd <- sqrt(c$fit)
+observed_means_ad$sd <- sd
+observed_means_ad$n <- svytotal(~Year, design = survey_design_w)
+CI<-confint(svyby(~predicted_ad, ~Year, design = survey_design_w, FUN = svymean))
+observed_means_ad <- cbind(observed_means_ad, CI[,"2.5 %"], CI[,"97.5 %"])
+colnames(observed_means_ad) <- c("Year", "mean", "se", "sd", "n","CI_low", "CI_high")
+
+
+# Calculate the weighted mean from unad model
+observed_means_unad <- svyby(~predicted_unad, ~Year, design = survey_design_w, FUN = svymean)
+r <- svyby(~predicted_unad, by = ~Year, design = survey_design_w, svyvar) 
+sd <- sqrt(r$fit)
+observed_means_unad$sd <- sd
+CI<-confint(svyby(~observed_means_unad, ~Year, design = survey_design_w, FUN = svymean))
+observed_means_unad <- cbind(observed_means_unad, CI[,"2.5 %"], CI[,"97.5 %"])
+colnames(observed_means_unad) <- c("Year", "mean", "se", "sd", "n","CI_low", "CI_high")
+
+
+# Combine the data
+combined_data_x <- rbind(
+  transform(observed_means_ad, Model = "Adjusted model"),
+  transform(observed_means_unad, Model = "Crew model")
+)
+
+ggplot(combined_data_x, aes(x = Year, y = mean, color = Model, group = Model)) +
+  geom_line() +
+  geom_point(size = 3) +
+  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "black", size = 5) +  # Add values on the points
+  scale_color_manual(values = c( "Adjusted model" = "deeppink3", "Crew model" = "slateblue")) +  # Customize colors
+  labs(x = "Year", y = "Markers of Adulthood Score [0;5] ", color = "GEE model", title = "Evolution of markers of adulhood", subtitle = "GEE model, weightened male data") +
+  coord_cartesian(ylim = c(1.6,2.2)) +
+  theme_minimal()
+
+
+observed_plot <- ggplot(observed_means, aes(x = Year, y = mean)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  geom_point(color = "lightsalmon", size = 3) +
+  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "lightsalmon", size = 5) +
+  labs(x = "Year", y="Observation")+ 
+  coord_cartesian(ylim = c(1.5,2)) 
+
+predicted_ad <- ggplot(observed_means_ad, aes(x = Year, y = mean)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  geom_point(color = "plum4", size = 3) +
+  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "plum4", size = 5) +
+  labs(x = "Year", y = " Adjusted model")+ 
+  coord_cartesian(ylim = c(1.5,2)) 
+
+predicted_unad <- ggplot(observed_means_unad, aes(x = Year, y = mean)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  geom_point(color = "skyblue3", size = 3) +
+  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "skyblue3", size = 5) +
+  labs(x = "Year", y = " Unadjasted model")+ 
+  coord_cartesian(ylim = c(1.5,2)) 
+
+title_plot <- ggdraw() + draw_label("Markers of Adulthood, weightened male data", fontface = 'bold')
+cowplot::plot_grid(title_plot, observed_plot, predicted_ad, predicted_unad)
+
+
+########################################################################
+##### Unweightened analysis, exchangeable WCS (g4 as initial model) ####
+########################################################################
+
+MoA_Clean_M_pd_u<-MoA_Clean_M_pd
+
+##### removing influential obs based on Cooks.d
+
+cooks_d <-cooks.distance(g4, level = c("observations")) 
+
+cutoff =4/length(cooks_d)
+
+# Identify influential observations
+influential_obs<-which(cooks_d > cutoff) # 121 id
+MoA_Clean_M_pd_u<-MoA_Clean_M_pd_u[-(which(cooks_d > cutoff)), ] # 1632 obs
+
+g4.2 <- glmgee(MoA_f,
+               data = MoA_Clean_M_pd_u,
+               weights = weight_by_gender,
+               id = (IDPERS:IDHOUS),
+               corstr = "exchangeable") 
+
+summary(g4.2) 
+raw_pvalues <- c(2.1239e-05, 0.38156775, 0.36993382,0.42104900)
+adjusted_pvalues <- p.adjust(raw_pvalues, method = "holm") 
+# 8.4956e-05 1.0000e+00 1.0000e+00 1.0000e+00
+confint(g4.2)
+
+###############
+##### plot ####
+###############
+
+# 1) Create an unadjusted model
+
+g4.2_unad<- glmgee(MoA_ ~ Year,
+                   data = MoA_Clean_M_pd_u,
+                   id = (IDPERS:IDHOUS),
+                   corstr = "exchangeable") 
+summary(g4.2_unad)
+raw_pvalues <- c(2.22e-16, 0.36160, 0.10612, 2.3162e-07)
+adjusted_pvalues <- p.adjust(raw_pvalues, method = "holm") 
+# Estimates:1.67025  ;0.04386 ; 0.07658 ; 0.18723         
+# 8.8800e-16 3.6160e-01 2.1224e-01 6.9486e-07
+
+
+# 2) Create an survey design data with predicted values
+MoA_Clean_M_pd_u$predicted_ad <- predict(g4.2, type = "link")
+MoA_Clean_M_pd_u$predicted_unad <- predict(g4.2_unad, type = "link")
+
+survey_design_u<- svydesign(ids = ~IDPERS, data = MoA_Clean_M_pd_u)
+
+# 3) Plot the models
+
+# Observed
+observed_means <- svyby(~MoA_, ~Year, design = survey_design_u, FUN = svymean)
+y <- svyby(~MoA_, by = ~Year, design = survey_design_u, svyvar) 
+sd <- sqrt(y$MoA_)
+observed_means$sd <- sd
+colnames(observed_means) <- c("Year", "mean", "se", "sd")
+
+# Calculate the weighted mean from ad model
+observed_means_ad <- svyby(~predicted_ad, ~Year, design = survey_design_u, FUN = svymean)
+c <- svyby(~predicted_ad, by = ~Year, design = survey_design_u, svyvar) 
+sd <- sqrt(c$fit)
+observed_means_ad$sd <- sd
+colnames(observed_means_ad) <- c("Year", "mean", "se", "sd")
+
+# Calculate the weighted mean from unad model
+observed_means_unad <- svyby(~predicted_unad, ~Year, design = survey_design_u, FUN = svymean)
+r <- svyby(~predicted_unad, by = ~Year, design = survey_design_u, svyvar) 
+sd <- sqrt(r$fit)
+observed_means_unad$sd <- sd
+colnames(observed_means_unad) <- c("Year", "mean", "se", "sd")
+
+# Combine the data
+combined_data_x <- rbind(
+  transform(observed_means_ad, Model = "Adjusted model"),
+  transform(observed_means_unad, Model = "Raw model")
+)
+
+ggplot(combined_data_x, aes(x = Year, y = mean, color = Model, group = Model)) +
+  geom_line() +
+  geom_point(size = 3) +
+  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "black", size = 5) +  # Add values on the points
+  scale_color_manual(values = c( "Adjusted model" = "deeppink3", "Raw model" = "slateblue")) +  # Customize colors
+  labs(x = "Year", y = "Markers of Adulthood Score [0;5] ", color = "GEE model", title = "Evolution of markers of adulhood ", subtitle = "GEE model (Exchangeable WCS), not weightened male data") +
+  coord_cartesian(ylim = c(1.5,2.2)) +
+  theme_minimal()
+
+observed_plot <- ggplot(observed_means, aes(x = Year, y = mean)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  geom_point(color = "lightsalmon", size = 3) +
+  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "lightsalmon", size = 5) +
+  labs(x = "Year", y="Observation")+ 
+  coord_cartesian(ylim = c(1.5,2.5)) 
+
+predicted_ad <- ggplot(observed_means_ad, aes(x = Year, y = mean)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  geom_point(color = "plum4", size = 3) +
+  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "plum4", size = 5) +
+  labs(x = "Year", y = " Adjusted model")+ 
+  coord_cartesian(ylim = c(1.5,2.5)) 
+
+predicted_unad <- ggplot(observed_means_unad, aes(x = Year, y = mean)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  geom_point(color = "skyblue3", size = 3) +
+  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "skyblue3", size = 5) +
+  labs(x = "Year", y = " Unadjasted model")+ 
+  coord_cartesian(ylim = c(1.5,2.5)) 
+
+
+title_plot <- ggdraw() + draw_label("Markers of Adulthood, non weightened male data", fontface = 'bold')
+cowplot::plot_grid(title_plot, observed_plot, predicted_ad, predicted_unad)
+
+
+

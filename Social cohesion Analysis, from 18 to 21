@@ -3,6 +3,7 @@
 ########## SC (18-21) analysis ##########
 #########################################
 #########################################
+
 library(panelr)
 library(cowplot)
 library(tidyverse)
@@ -32,7 +33,6 @@ Data %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) # 2333  unique IDP
 ###########################################
 ####  Adjustment factors selection  #######
 ###########################################
-
 # Age as numeric
 Data$AGE <- as.numeric(Data$AGE )
 # Financial satisfaction as numeric 
@@ -43,23 +43,19 @@ Data$Health_Status_ <- as.numeric(Data$Health_Status_ )
 Data$Interview_language_ <- as.factor(Data$Interview_language_ )
 levels(Data$Interview_language_)
 Data$Interview_language_ <- relevel(Data$Interview_language_, ref = "German")
-
 # Convert Gender & IDHOUS to a factor
 Data$Gender <- as.factor(Data$Gender)
 Data$IDHOUS <- as.factor(Data$IDHOUS)
-
 # Convert Mode_of_Data_Collection_ to a factor
 Data$Mode_of_Data_Collection_ <- as.factor(Data$Mode_of_Data_Collection_ )
 levels(Data$Mode_of_Data_Collection_)
 Data$Mode_of_Data_Collection_ <- relevel(Data$Mode_of_Data_Collection_, ref = "CATI")
-
-
 # Removing all NA in weights
 Data <- Data[complete.cases(Data$new_weight_), ]
 Data %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) # 2333
 
+# Dataset with variables that I'll be using
 SC_Data <- Data[, c("IDPERS", "IDHOUS", "SRS_","Trust_","Engagement_" , "new_weight_", "Year", "Score_Neg_Emotions_", "Finan_satisfaction_", "Gender", "Mode_of_Data_Collection_", "Interview_language_", "AGE")]
-
 # Removing all NA for MoA
 SC_Data_Clean <- na.omit(SC_Data) # 4003 X 13
 SC_Data_Clean %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) # 2,159
@@ -68,9 +64,9 @@ SC_Data_Clean$wave<- as.factor(SC_Data_Clean$Year)
 SC_Data_Clean$Year<-as.factor(SC_Data_Clean$Year)
 contrasts(SC_Data_Clean$Year) <- code_diff
 
-#########################
-##### Summary Stat ######
-#### Non weightened #####
+#######################
+##### Summary Stat ####
+#### Non weighted #####
 
 summary_Trust <- SC_Data_Clean %>% 
   group_by(Year) %>% 
@@ -86,7 +82,7 @@ summary_Trust <- SC_Data_Clean %>%
 t <- ggplot(summary_Trust, aes(x = Year, y = mean)) +
   geom_bar(stat = "identity", fill = "khaki2") +
   geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.2) +
-  labs(title = "Trust", subtitle = "Non weightened results",
+  labs(title = "Trust", subtitle = "Non weighted results",
        x = "Year",
        y = "Mean + SD") +
   theme_minimal()
@@ -107,7 +103,7 @@ summary_SRS <- SC_Data_Clean %>%
 f <- ggplot(summary_SRS, aes(x = Year, y = mean)) +
   geom_bar(stat = "identity", fill = "plum2") +
   geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.2) +
-  labs(title = "Social relationship satisfaction", subtitle = "Non weightened results",
+  labs(title = "Social relationship satisfaction", subtitle = "Non weighted results",
        x = "Year",
        y = "Mean + SD") +
   theme_minimal()
@@ -123,7 +119,7 @@ summary_stats_Engagement <- SC_Data_Clean %>%
 p<-ggplot(summary_stats_Engagement, aes(x = factor(Year), y = proportion, fill = factor(Engagement_))) +
   geom_bar(stat = "identity") +
   geom_text(aes(label = paste0(round(proportion * 100), "%")), position = position_stack(vjust = 0.5), color = "black", size = 4) +  # Add percentage values
-  labs(x = "Year", y = "Proportion (%)", fill = "Engagement", title ="Engagement", subtitle = "Non weightened results" ) +
+  labs(x = "Year", y = "Proportion (%)", fill = "Engagement", title ="Engagement", subtitle = "Non weighted results" ) +
   scale_fill_manual(values = c("0" = "peachpuff1", "1" = "lavender"), name = "Engagement", labels = c("No", "Yes")) +  
   theme_minimal()
 p<-p + theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
@@ -131,10 +127,9 @@ p<-p + theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 cowplot::plot_grid(t,f,p, nrow = 3)
 
 
-
-#########################
-##### Summary Stat ######
-####   Weightened   #####
+#######################
+#### Summary Stat #####
+####   weighted   #####
 
 survey_design<- svydesign(ids = ~IDPERS, weights = SC_Data_Clean$new_weight_, data = SC_Data_Clean)
 
@@ -149,7 +144,7 @@ summary_Trust_w$sd <- sd
 Trust_w <- ggplot(summary_Trust_w, aes(x = Year, y = Trust_)) +
   geom_bar(stat = "identity", fill = "khaki2") +
   geom_errorbar(aes(ymin = Trust_ - sd, ymax = Trust_ + sd), width = 0.2) +
-  labs(title = "Trust", subtitle = "Weightened results",
+  labs(title = "Trust", subtitle = "weighted results",
        x = "Year",
        y = "Mean + SD") +
   theme_minimal()
@@ -166,7 +161,7 @@ summary_SRS_w$sd <- sd
 SRS_w <- ggplot(summary_SRS_w, aes(x = Year, y = SRS_)) +
   geom_bar(stat = "identity", fill = "plum2") +
   geom_errorbar(aes(ymin = SRS_ - sd, ymax = SRS_ + sd), width = 0.2) +
-  labs(title = "Social relationship satisfaction", subtitle = "Weightened results",
+  labs(title = "Social relationship satisfaction", subtitle = "weighted results",
        x = "Year",
        y = "Mean + SD") +
   theme_minimal()
@@ -188,11 +183,10 @@ Engagement_w_sum_long <- Engagement_w_sum_long[-c(1:8), ]
 Engagement_w<-ggplot(Engagement_w_sum_long, aes(x = factor(Year), y = Percentage, fill = factor(Engagement))) +
   geom_bar(stat = "identity") +  # Use position = "identity" to make the bar heights correspond to the percentage
   geom_text(aes(label = paste0(round(Percentage), "%")), position = position_stack(vjust = 0.5), color = "black", size = 4, vjust = -0.5) +  # Add percentage values on top of the bars
-  labs(x = "Year", y = "Proportion (%)", fill = "Engagement", title ="Engagement", subtitle = "Weightened results" ) +
+  labs(x = "Year", y = "Proportion (%)", fill = "Engagement", title ="Engagement", subtitle = "weighted results" ) +
   scale_fill_manual(values = c( "Yes" = "lavender", "No" = "peachpuff1"), name = "Engagement", labels = c("No", "Yes"))+
   theme_minimal()
 Engagement_w<-Engagement_w + theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
-
 
 cowplot::plot_grid(Trust_w,SRS_w,Engagement_w, nrow = 3)
 
@@ -201,13 +195,13 @@ cowplot::plot_grid(Trust_w,SRS_w,Engagement_w, nrow = 3)
 ############################
 
 ################ 
-##### MEM ######
+##### 1: MEM ###
 ################ 
 
+# Weighted
 T_MEM_W <- lmer(Trust_ ~ Year + Finan_satisfaction_ + Gender +  Interview_language_ + Score_Neg_Emotions_ +Mode_of_Data_Collection_+ AGE + (1 | IDPERS) + (1|IDPERS:IDHOUS), weights = new_weight_, data = SC_Data_Clean)
 tab_model(T_MEM_W)
 summary(T_MEM_W)
-
 check_model(T_MEM_W)
 check_autocorrelation(T_MEM_W) #Autocorrelated residuals detected (p < .001).
 check_outliers(T_MEM_W) #OK: No outliers detected. Based on the following method and threshold: cook (0.918),  For variable: (Whole model)
@@ -217,7 +211,6 @@ performance:: icc(T_MEM_W, by_group = T)
 #Group         |   ICC
 #IDPERS:IDHOUS | 0.027
 #IDPERS        | 0.668
-
 performance:: icc(lmer(Trust_ ~ Year + Finan_satisfaction_ + Gender +  Interview_language_ + Score_Neg_Emotions_ +Mode_of_Data_Collection_+ AGE + (1 | IDPERS), weights = new_weight_, data = SC_Data_Clean), by_group = T)
 # Group  |   ICC
 # IDPERS | 0.693
@@ -228,19 +221,17 @@ performance:: icc(lmer(Trust_ ~ Year + Finan_satisfaction_  + Gender +  Intervie
 # Group  |   ICC
 # IDHOUS | 0.565
 
-# Non weightened
+# Non weighted
+
 T_MEM_UnW <- lmer(Trust_ ~ Year + Finan_satisfaction_ + Gender +  Interview_language_ + Score_Neg_Emotions_ +Mode_of_Data_Collection_+ AGE + (1 | IDPERS) + (1|IDPERS:IDHOUS),  data = SC_Data_Clean)
 tab_model(T_MEM_UnW)
 summary(T_MEM_UnW)
-
-
 performance:: icc(T_MEM_UnW, by_group = T)# error
 check_model(T_MEM_UnW)
 check_autocorrelation(T_MEM_UnW) #Autocorrelated residuals detected (p < .001).
 check_outliers(T_MEM_UnW) #OK: No outliers detected. Based on the following method and threshold: cook (0.907),  For variable: (Whole model)
 check_heteroscedasticity(T_MEM_UnW) #Warning: Heteroscedasticity (non-constant error variance) detected (p < .001).
 check_normality(T_MEM_UnW)#Non-normality of residuals detected (p < .001).
-
 performance:: icc(lmer(Trust_ ~ Year + Finan_satisfaction_ + Gender +  Interview_language_ + Score_Neg_Emotions_ +Mode_of_Data_Collection_+ AGE + (1 | IDPERS), data = SC_Data_Clean), by_group = T)
 # Group  |   ICC
 # IDPERS | 0.627
@@ -254,39 +245,35 @@ performance:: icc(lmer(Trust_ ~ Year + Finan_satisfaction_ + Gender +  Interview
 
 
 ################
-##### GEE ######
+### 2: GEE #####
 ################
+
+# Reformating data as panel 
 SC_Data_Clean$Year<-as.factor(SC_Data_Clean$Year)
 SC_Data_Clean$wave<-SC_Data_Clean$Year
 SC_Clean_pd <- panel_data(SC_Data_Clean, id = IDPERS, wave = wave) # Dataset preparation -> need to be clean
 SC_Clean_pd <- SC_Clean_pd[order(SC_Clean_pd$IDPERS), ]
 SC_Clean_pd <- SC_Clean_pd[order(SC_Clean_pd$wave), ]
 
-
+# Formula for Trust analysis
 T_f = formula(Trust_ ~ Year + Finan_satisfaction_ + Gender +  Interview_language_ + Score_Neg_Emotions_ +Mode_of_Data_Collection_+ AGE)
 
-
-### Weigtened data
-
+### weighted models
 g1 <- glmgee(T_f,
              data = SC_Clean_pd,
              weights = new_weight_,
              id = (IDPERS:IDHOUS),
              corstr = "unstructured") 
-
 summary(g1)
-
 g2 <- update(g1,corstr = "exchangeable")  
 summary(g2)
 
-### Non weigtened data
-
+### Non weighted models
 g3 <- glmgee(T_f,
              data = SC_Clean_pd,
              id = (IDPERS:IDHOUS),
              corstr = "unstructured")  
 summary(g3)
-
 g4 <- update(g3,corstr = "exchangeable") 
 summary(g4) 
 
@@ -307,12 +294,11 @@ result <- model_selection_function(g1, g2, g3, g4)
 
 
 ######################################################################
-##### Weightened analysis, exchangeable WCS (g2 as initial model) ####
+##### weighted analysis, exchangeable WCS (g2 as initial model) ####
 ######################################################################
 SC_Clean_pd_w<-SC_Clean_pd
 
 ##### removing influential obs based on Cooks.d
-
 cooks_d <-cooks.distance(g2, level = c("observations"))
 cutoff = 4/ (length(cooks_d)) # 0.0009992506
 
@@ -320,6 +306,7 @@ cutoff = 4/ (length(cooks_d)) # 0.0009992506
 influential_obs<-which(cooks_d > cutoff) # 159 id
 SC_Clean_pd_w<-SC_Clean_pd_w[-(which(cooks_d > cutoff)), ] # 3844 obs
 
+# Upadate the model with clean data
 g2.2 <- update(g2,data = SC_Clean_pd_w)
 summary(g2.2)
 confint(g2.2)
@@ -327,13 +314,7 @@ raw_pvalues <- c(2.22e-16, 0.09619796, 0.01530241 , 0.56135192)
 adjusted_pvalues <- p.adjust(raw_pvalues, method = "holm") 
 # 8.880000e-16 0.1923959 0.04590723 0.5613519
 
-
-
-###############
-##### plot ####
-###############
-
-# 1) Create an unadjusted model
+# Create an unadjusted model
 
 g2.2_unad<- glmgee(Trust_ ~ Year,
                    data = SC_Clean_pd_w,
@@ -345,14 +326,15 @@ raw_pvalues <- c(2e-16, 0.286775, 0.040246, 0.914449)
 adjusted_pvalues <- p.adjust(raw_pvalues, method = "holm") 
 # 8.00000e-16 5.73550e-01 1.20738e-01 9.14449e-01
 
-
-# 2) Create an survey design data with predicted values
+# Create an survey design data with predicted values
 SC_Clean_pd_w$predicted_ad <- predict(g2.2, type = "link")
 SC_Clean_pd_w$predicted_unad <- predict(g2.2_unad, type = "link")
 
 survey_design_w<- svydesign(ids = ~IDPERS, weights = SC_Clean_pd_w$new_weight_, data = SC_Clean_pd_w)
 
-# 3) Plot the models
+#####################################################
+### Plot the models + Calculate the effect sizes ####
+#####################################################
 
 # Observed
 observed_means <- svyby(~Trust_, ~Year, design = survey_design_w, FUN = svymean)
@@ -362,6 +344,7 @@ observed_means$sd <- sd
 observed_means$n <- svytotal(~Year, design = survey_design_w)
 colnames(observed_means) <- c("Year", "mean", "se", "sd", "n")
 
+###### Effect size calculation part : 
 # Hedges g :
 # 2018 vs 2019
 (5.858650 - 5.870399)/sqrt(((678.5084 -1)*1.879246^2 + (572.7030 -1)*1.882370^2) / (678.5084 +572.7030 -2))
@@ -373,15 +356,11 @@ colnames(observed_means) <- c("Year", "mean", "se", "sd", "n")
 (5.871269 - 5.906087)/sqrt(((1249.9198-1)*2.127835^2 + (787.6739-1)*2.038377^2) / (1249.9198 +787.6739 -2))
 #-0.01662976
 
-
 # ES for Finan_satisfaction_
-svycor(~Trust_ + Finan_satisfaction_, design = survey_design_w)
-#0.19
-r_to_d(0.19)
-#0.3870505
+svycor(~Trust_ + Finan_satisfaction_, design = survey_design_w) #0.19
+r_to_d(0.19) #0.3870505
 
 # ES for Gender
-
 ## Function to calculate hudges g
 calculate_hedges_g <- function(data, grouping_var, response_var) {
   # Ensure that the grouping variable is a factor
@@ -411,33 +390,26 @@ return(list(observed_means = observed_means, hedges_g = g))
 
 calculate_hedges_g(data = survey_design_w,
                    grouping_var = "Gender",
-                   response_var = "Trust_")
-# 0.01244773
+                   response_var = "Trust_") # 0.01244773
 
 
 # ES for Interview_language_
 calculate_hedges_g(data = survey_design_w,
                    grouping_var = "Interview_language_",
-                   response_var = "Trust_")
-#-0.470637
+                   response_var = "Trust_") #-0.470637
 
 # ES for Score_Neg_Emotions_
-svycor(~Trust_ + Score_Neg_Emotions_, design = survey_design_w)
-#-0.31
-r_to_d(-0.31)
-#-0.652126
+svycor(~Trust_ + Score_Neg_Emotions_, design = survey_design_w) #-0.31
+r_to_d(-0.31) #-0.652126
 
 # ES for Mode_of_Data_Collection_
-calculate_hedges_g(data = survey_design_w,
+calculate_hedges_g(data = survey_design_w, 
                    grouping_var = "Mode_of_Data_Collection_",
-                   response_var = "Trust_")
-#-0.3111136
+                   response_var = "Trust_") #-0.3111136
 
 # ES for AGE
-svycor(~Trust_ + AGE, design = survey_design_w)
-#0.09
-r_to_d(0.09)
-#0.1807335
+svycor(~Trust_ + AGE, design = survey_design_w) #0.09
+r_to_d(0.09) #0.1807335
 
 
 # Calculate the weighted mean from ad model
@@ -449,7 +421,6 @@ CI<-confint(svyby(~predicted_ad, ~Year, design = survey_design_w, FUN = svymean)
 observed_means_ad <- cbind(observed_means_ad, CI[,"2.5 %"], CI[,"97.5 %"])
 colnames(observed_means_ad) <- c("Year", "mean", "se", "sd", "CI_low", "CI_high")
 
-
 # Calculate the weighted mean from unad model
 observed_means_unad <- svyby(~predicted_unad, ~Year, design = survey_design_w, FUN = svymean)
 r <- svyby(~predicted_unad, by = ~Year, design = survey_design_w, svyvar) 
@@ -459,32 +430,7 @@ CI<-confint(svyby(~predicted_unad, ~Year, design = survey_design_w, FUN = svymea
 observed_means_unad <- cbind(observed_means_unad, CI[,"2.5 %"], CI[,"97.5 %"])
 colnames(observed_means_unad) <- c("Year", "mean", "se", "sd", "CI_low", "CI_high")
 
-
-observed_plot <- ggplot(observed_means, aes(x = Year, y = mean)) +
-  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
-  geom_point(color = "lightsalmon", size = 3) +
-  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "lightsalmon", size = 5) +
-  labs(x = "Year", y="Observation")+ 
-  coord_cartesian(ylim = c(5.5,6.5)) 
-
-predicted_ad <- ggplot(observed_means_ad, aes(x = Year, y = mean)) +
-  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
-  geom_point(color = "plum4", size = 3) +
-  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "plum4", size = 5) +
-  labs(x = "Year", y = " Adjusted model")+ 
-  coord_cartesian(ylim = c(5.5,6.5)) 
-
-predicted_unad <- ggplot(observed_means_unad, aes(x = Year, y = mean)) +
-  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
-  geom_point(color = "skyblue3", size = 3) +
-  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "skyblue3", size = 5) +
-  labs(x = "Year", y = " Unadjasted model")+ 
-  coord_cartesian(ylim = c(5.5,6.5)) 
-
-title_plot <- ggdraw() + draw_label("Trust, weightened data", fontface = 'bold')
-cowplot::plot_grid(title_plot, observed_plot, predicted_ad, predicted_unad)
-
-# Combine the data
+# Combine the data and draw the plot
 combined_data_x <- rbind(
   transform(observed_means_ad, Model = "Adjusted model"),
   transform(observed_means_unad, Model = "Raw model")
@@ -494,13 +440,13 @@ ggplot(combined_data_x, aes(x = Year, y = mean, color = Model, group = Model)) +
   geom_point(size = 3) +
   geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "black", size = 5) +  # Add values on the points
   scale_color_manual(values = c( "Adjusted model" = "deeppink3", "Raw model" = "slateblue")) +  # Customize colors
-  labs(x = "Year", y = "General trust in people [0;10] ", color = "GEE model", title = "Evolution of general trust in people ", subtitle = "GEE model (Exchangeable WCS), weightened data") +
+  labs(x = "Year", y = "General trust in people [0;10] ", color = "GEE model", title = "Evolution of general trust in people ", subtitle = "GEE model (Exchangeable WCS), weighted data") +
   coord_cartesian(ylim = c(5,6)) +
   theme_minimal()
 
 
 ########################################################################
-##### Unweightened analysis, unstructured WCS (g3 as initial model) ####
+##### Unweighted analysis, unstructured WCS (g3 as initial model) ####
 ########################################################################
 SC_Clean_pd_u<-SC_Clean_pd
 
@@ -544,7 +490,6 @@ survey_design_u<- svydesign(ids = ~IDPERS, data = SC_Clean_pd_u)
 
 # 3) Plot the models
 
-
 # Observed
 observed_means <- svyby(~Trust_, ~Year, design = survey_design_u, FUN = svymean)
 y <- svyby(~Trust_, by = ~Year, design = survey_design_u, svyvar) 
@@ -566,30 +511,6 @@ sd <- sqrt(r$fit)
 observed_means_unad$sd <- sd
 colnames(observed_means_unad) <- c("Year", "mean", "se", "sd")
 
-observed_plot <- ggplot(observed_means, aes(x = Year, y = mean)) +
-  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
-  geom_point(color = "lightsalmon", size = 3) +
-  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "lightsalmon", size = 5) +
-  labs(x = "Year", y="Observation")+ 
-  coord_cartesian(ylim = c(5.5,6.5)) 
-
-predicted_ad <- ggplot(observed_means_ad, aes(x = Year, y = mean)) +
-  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
-  geom_point(color = "plum4", size = 3) +
-  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "plum4", size = 5) +
-  labs(x = "Year", y = " Adjusted model")+ 
-  coord_cartesian(ylim = c(5.5,6.5)) 
-
-predicted_unad <- ggplot(observed_means_unad, aes(x = Year, y = mean)) +
-  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
-  geom_point(color = "skyblue3", size = 3) +
-  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "skyblue3", size = 5) +
-  labs(x = "Year", y = " Unadjasted model")+ 
-  coord_cartesian(ylim = c(5.5,6.5)) 
-
-title_plot <- ggdraw() + draw_label("Trust, non weightened data", fontface = 'bold')
-cowplot::plot_grid(title_plot, observed_plot, predicted_ad, predicted_unad)
-
 # Combine the data
 combined_data_x <- rbind(
   transform(observed_means_ad, Model = "Adjusted model"),
@@ -600,29 +521,25 @@ ggplot(combined_data_x, aes(x = Year, y = mean, color = Model, group = Model)) +
   geom_point(size = 3) +
   geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "black", size = 5) +  # Add values on the points
   scale_color_manual(values = c( "Adjusted model" = "deeppink3", "Raw model" = "slateblue")) +  # Customize colors
-  labs(x = "Year", y = "General trust in people [0;10] ", color = "GEE model", title = "Evolution of general trust in people ", subtitle = "GEE model (Unstructured WCS), Not weightened data") +
+  labs(x = "Year", y = "General trust in people [0;10] ", color = "GEE model", title = "Evolution of general trust in people ", subtitle = "GEE model (Unstructured WCS), Not weighted data") +
   coord_cartesian(ylim = c(5.8,6.2)) +
   theme_minimal()
-
-
 
 rm(list = setdiff(ls(), c("Data", "SC_Clean_pd", "SC_Data_Clean", "model_selection_function", "calculate_hedges_g")))
 
 
-##########################
-######### SRS ############
-##########################
+#################################
+######### SRS analysis ##########
+#################################
 
-################ 
-##### MEM ######
-################ 
+#################
+### 1: MEM ######
+#################
 
-# 1) Contrast treatment with code_diff
-
+# A : Aeighted
 SRS_MEM_W <- lmer(SRS_ ~ Year + Finan_satisfaction_ + Gender +  Interview_language_ + Score_Neg_Emotions_ +Mode_of_Data_Collection_+ AGE + (1 | IDPERS) + (1|IDPERS:IDHOUS), weights = new_weight_, data = SC_Data_Clean)
 tab_model(SRS_MEM_W)
 summary(SRS_MEM_W)
-
 check_model(SRS_MEM_W)
 check_autocorrelation(SRS_MEM_W) #Autocorrelated residuals detected (p < .001).
 check_outliers(SRS_MEM_W) #OK: No outliers detected. Based on the following method and threshold: cook (0.918),  For variable: (Whole model)
@@ -632,7 +549,6 @@ performance:: icc(SRS_MEM_W, by_group = T)
 #Group         |   ICC
 #IDPERS:IDHOUS | 0.124
 #IDPERS        | 0.443
-
 performance:: icc(lmer(SRS_ ~ Year + Finan_satisfaction_ + Gender +  Interview_language_ + Score_Neg_Emotions_ +Mode_of_Data_Collection_+ AGE + (1 | IDPERS), weights = new_weight_, data = SC_Data_Clean), by_group = T)
 # Group  |   ICC
 # IDPERS | 0.560
@@ -643,24 +559,21 @@ performance:: icc(lmer(SRS_ ~ Year + Finan_satisfaction_  + Gender +  Interview_
 # Group  |   ICC
 # IDHOUS | 0.411
 
-# Non weightened
+
+# B : Non weighted
 SRS_MEM_UnW <- lmer(SRS_ ~ Year + Finan_satisfaction_ + Gender +  Interview_language_ + Score_Neg_Emotions_ +Mode_of_Data_Collection_+ AGE + (1 | IDPERS) + (1|IDPERS:IDHOUS),  data = SC_Data_Clean)
 tab_model(SRS_MEM_UnW)
 summary(SRS_MEM_UnW)
-
-
 performance:: icc(SRS_MEM_UnW, by_group = T)
 # Group         |   ICC
 ---------------------
   # IDPERS:IDHOUS | 0.048
   # IDPERS        | 0.396
-
 check_model(SRS_MEM_UnW)
 check_autocorrelation(SRS_MEM_UnW) #Autocorrelated residuals detected (p < .001).
 check_outliers(SRS_MEM_UnW) #OK: No outliers detected. Based on the following method and threshold: cook (0.907),  For variable: (Whole model)
 check_heteroscedasticity(SRS_MEM_UnW) #Warning: Heteroscedasticity (non-constant error variance) detected (p < .001).
 check_normality(SRS_MEM_UnW)#Non-normality of residuals detected (p  < .001).
-
 performance:: icc(lmer(SRS_ ~ Year + Finan_satisfaction_  + Gender +  Interview_language_ + Score_Neg_Emotions_ +Mode_of_Data_Collection_+ AGE + (1 | IDPERS), data = SC_Data_Clean), by_group = T)
 # Group  |   ICC
 # IDPERS | 0.440
@@ -673,50 +586,44 @@ performance:: icc(lmer(SRS_ ~ Year + Finan_satisfaction_  + Gender +  Interview_
 
 
 
-################
-##### GEE ######
-################
+###############
+### 2: GEE ####
+###############
 
+# Formula for SRS analysis
 SRS_f = formula(SRS_ ~ Year + Finan_satisfaction_ + Gender +  Interview_language_ + Score_Neg_Emotions_ +Mode_of_Data_Collection_+ AGE)
 
 
-### Weigtened data
-
+### weighted models
 g1 <- glmgee(SRS_f,
              data = SC_Clean_pd,
              weights = new_weight_,
              id = (IDPERS:IDHOUS),
              corstr = "unstructured") 
 summary(g1)
-
 g2 <- update(g1,corstr = "exchangeable") 
 summary(g2)
 
-### Non weigtened data
-
+### Non weighted models
 g3 <- glmgee(SRS_f,
              data = SC_Clean_pd,
              id = (IDPERS:IDHOUS),
              corstr = "unstructured")  
 summary(g3)
-
 g4 <- update(g3,corstr = "exchangeable") 
 summary(g4) 
 
-
-## Table with criterions #GLMGEE
+## Table with criterions
 model_selection_function(g1, g2, g3, g4)
 
+######################################################################
+##### weighted analysis, unstructured WCS (g1 as initial model) ####
+######################################################################
 
-######################################################################
-##### Weightened analysis, unstructured WCS (g1 as initial model) ####
-######################################################################
 SC_Clean_pd_w<-SC_Clean_pd
 
 ##### removing influential obs based on Cooks.d
-
 cooks_d <-cooks.distance(g1, level = c("observations")) # 4003 (as number of total id)
-
 N = 4003
 cutoff = 4/ (N) #0.0009992506
 
@@ -731,11 +638,7 @@ raw_pvalues <- c(2.22e-16, 0.00780206, 0.00212603 , 0.01108588)
 adjusted_pvalues <- p.adjust(raw_pvalues, method = "holm") 
 # 8.880000e-16 1.560412e-02 6.378090e-03 1.560412e-02
 
-###############
-##### plot ####
-###############
-
-# 1) Create an unadjusted model
+#  Unadjusted model
 
 g1.2_unad<- glmgee(SRS_ ~ Year,
                    data = SC_Clean_pd_w,
@@ -747,13 +650,16 @@ raw_pvalues <- c(2e-16, 0.06087, 0.12540,  0.15574)
 adjusted_pvalues <- p.adjust(raw_pvalues, method = "holm") 
 # 8.00000e-16 1.8261e-01 2.5080e-01 2.5080e-01
 
-# 2) Create an survey design data with predicted values
+# Create an survey design data with predicted values
 SC_Clean_pd_w$predicted_ad <- predict(g1.2, type = "link")
 SC_Clean_pd_w$predicted_unad <- predict(g1.2_unad, type = "link")
 
 survey_design_w<- svydesign(ids = ~IDPERS, weights = SC_Clean_pd_w$new_weight_, data = SC_Clean_pd_w)
 
-# 3) Plot the models
+
+####################################################
+##### plot the models + effect size calculation ####
+####################################################
 
 # Observed
 observed_means <- svyby(~SRS_, ~Year, design = survey_design_w, FUN = svymean)
@@ -763,55 +669,40 @@ observed_means$sd <- sd
 observed_means$n<-svytotal(~Year, design = survey_design_w)
 colnames(observed_means) <- c("Year", "mean", "se", "sd", "n")
 
-# Hedges g :
 
 # 2018 vs 2019
-(16.37461  - 16.20339)/sqrt(((687.9705 -1)*2.012756^2 + (602.4115 -1)*1.961592^2) / (687.9705 +602.4115 -2))
-# 0.08608187
+(16.37461  - 16.20339)/sqrt(((687.9705 -1)*2.012756^2 + (602.4115 -1)*1.961592^2) / (687.9705 +602.4115 -2)) # Hedges g : 0.08608187
 #2019 vs 2020
-(16.20339 - 16.37388)/sqrt(((602.4115 -1)*1.961592^2 + (1275.2104 -1)*2.279743^2) / (602.4115 +1275.2104 -2))
-# -0.07984815
+(16.20339 - 16.37388)/sqrt(((602.4115 -1)*1.961592^2 + (1275.2104 -1)*2.279743^2) / (602.4115 +1275.2104 -2)) # Hedges g : -0.07984815
 #2020 vs 2021
-(16.37388 - 16.48037)/sqrt(((1275.2104-1)*2.279743^2 + (763.1253-1)*2.083257^2) / (1275.2104+763.1253 -2))
-#-0.04822363
-
+(16.37388 - 16.48037)/sqrt(((1275.2104-1)*2.279743^2 + (763.1253-1)*2.083257^2) / (1275.2104+763.1253 -2)) # Hedges g : -0.04822363
 
 # ES for Finan_satisfaction_
-svycor(~SRS_ + Finan_satisfaction_, design = survey_design_w)
-#0.27
-r_to_d(0.27)
-#0.560829
+svycor(~SRS_ + Finan_satisfaction_, design = survey_design_w) #0.27
+r_to_d(0.27) #0.560829
 
 # ES for Gender
 calculate_hedges_g(data = survey_design_w,
                    grouping_var = "Gender",
-                   response_var = "SRS_")
-# 0.02195056
+                   response_var = "SRS_") # 0.02195056
 
 # ES for Interview_language_
 calculate_hedges_g(data = survey_design_w,
                    grouping_var = "Interview_language_",
-                   response_var = "SRS_")
-#- 0.2075674
+                   response_var = "SRS_") #- 0.2075674
 
 # ES for Score_Neg_Emotions_
-svycor(~SRS_ + Score_Neg_Emotions_, design = survey_design_w)
-#-0.48
-r_to_d(-0.48)
-#-1.094306
+svycor(~SRS_ + Score_Neg_Emotions_, design = survey_design_w) #-0.48
+r_to_d(-0.48) #-1.094306
 
 # ES for Mode_of_Data_Collection_
 calculate_hedges_g(data = survey_design_w,
                    grouping_var = "Mode_of_Data_Collection_",
-                   response_var = "SRS_")
-#-0.2720116
+                   response_var = "SRS_") #-0.2720116
 
 # ES for AGE
-svycor(~SRS_ + AGE, design = survey_design_w)
-#0.03
-r_to_d(0.03)
-#0.06002702
-
+svycor(~SRS_ + AGE, design = survey_design_w) #0.03
+r_to_d(0.03) #0.06002702
 
 # Calculate the weighted mean from ad model
 observed_means_ad <- svyby(~predicted_ad, ~Year, design = survey_design_w, FUN = svymean)
@@ -822,7 +713,6 @@ CI<-confint(svyby(~predicted_ad, ~Year, design = survey_design_w, FUN = svymean)
 observed_means_ad <- cbind(observed_means_ad, CI[,"2.5 %"], CI[,"97.5 %"])
 colnames(observed_means_ad) <- c("Year", "mean", "se", "sd","CI_low", "CI_high")
 
-
 # Calculate the weighted mean from unad model
 observed_means_unad <- svyby(~predicted_unad, ~Year, design = survey_design_w, FUN = svymean)
 r <- svyby(~predicted_unad, by = ~Year, design = survey_design_w, svyvar) 
@@ -832,26 +722,6 @@ CI<-confint(svyby(~observed_means_unad, ~Year, design = survey_design_w, FUN = s
 observed_means_unad <- cbind(observed_means_unad, CI[,"2.5 %"], CI[,"97.5 %"])
 colnames(observed_means_unad) <- c("Year", "mean", "se", "sd","CI_low", "CI_high")
 
-observed_plot <- ggplot(observed_means, aes(x = Year, y = mean)) +
-  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
-  geom_point(color = "lightsalmon", size = 3) +
-  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "lightsalmon", size = 5) +
-  labs(x = "Year", y="Observation")
-
-predicted_ad <- ggplot(observed_means_ad, aes(x = Year, y = mean)) +
-  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
-  geom_point(color = "plum4", size = 3) +
-  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "plum4", size = 5) +
-  labs(x = "Year", y = " Adjusted model")
-
-predicted_unad <- ggplot(observed_means_unad, aes(x = Year, y = mean)) +
-  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
-  geom_point(color = "skyblue3", size = 3) +
-  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "skyblue3", size = 5) +
-  labs(x = "Year", y = " Unadjasted model")
-
-title_plot <- ggdraw() + draw_label("Social Relationship Satisfaction, weightened data", fontface = 'bold')
-cowplot::plot_grid(title_plot, observed_plot, predicted_ad, predicted_unad)
 
 # Combine the data 
 combined_data_x <- rbind(
@@ -863,14 +733,13 @@ ggplot(combined_data_x, aes(x = Year, y = mean, color = Model, group = Model)) +
   geom_point(size = 3) +
   geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "black", size = 5) +  # Add values on the points
   scale_color_manual(values = c( "Adjusted model" = "deeppink3", "Raw model" = "slateblue")) +  # Customize colors
-  labs(x = "Year", y = "Social Relationship Satisfaction [0;20] ", color = "GEE model", title = "Evolution of social relationship satisfaction ", subtitle = "GEE model (Unstructured WCS), weightened data") +
+  labs(x = "Year", y = "Social Relationship Satisfaction [0;20] ", color = "GEE model", title = "Evolution of social relationship satisfaction ", subtitle = "GEE model (Unstructured WCS), weighted data") +
   coord_cartesian(ylim = c(16.2,16.6)) +
   theme_minimal()
 
 
-
 ########################################################################
-##### Unweightened analysis, unstructured WCS (g3 as initial model) ####
+##### Unweighted analysis, unstructured WCS (g3 as initial model) ####
 ########################################################################
 SC_Clean_pd_u<-SC_Clean_pd
 
@@ -935,29 +804,7 @@ sd <- sqrt(r$fit)
 observed_means_unad$sd <- sd
 colnames(observed_means_unad) <- c("Year", "mean", "se", "sd")
 
-observed_plot <- ggplot(observed_means, aes(x = Year, y = mean)) +
-  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
-  geom_point(color = "lightsalmon", size = 3) +
-  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "lightsalmon", size = 5) +
-  labs(x = "Year", y="Observation")
-
-predicted_ad <- ggplot(observed_means_ad, aes(x = Year, y = mean)) +
-  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
-  geom_point(color = "plum4", size = 3) +
-  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "plum4", size = 5) +
-  labs(x = "Year", y = " Adjusted model")
-
-predicted_unad <- ggplot(observed_means_unad, aes(x = Year, y = mean)) +
-  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
-  geom_point(color = "skyblue3", size = 3) +
-  geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "skyblue3", size = 5) +
-  labs(x = "Year", y = " Unadjasted model")
-
-title_plot <- ggdraw() + draw_label("Social Relationship Satisfaction, non weightened data", fontface = 'bold')
-cowplot::plot_grid(title_plot, observed_plot, predicted_ad, predicted_unad)
-
-# Combine the data
-
+# Combine the data + plot
 combined_data_x <- rbind(
   transform(observed_means_ad, Model = "Adjusted model"),
   transform(observed_means_unad, Model = "Raw model")
@@ -967,37 +814,34 @@ ggplot(combined_data_x, aes(x = Year, y = mean, color = Model, group = Model)) +
   geom_point(size = 3) +
   geom_text(aes(label = round(mean, 2)), vjust = -0.5, color = "black", size = 5) +  # Add values on the points
   scale_color_manual(values = c( "Adjusted model" = "deeppink3", "Raw model" = "slateblue")) +  # Customize colors
-  labs(x = "Year", y = "Social Relationship Satisfaction [0;20] ", color = "GEE model", title = "Evolution of social relationship satisfaction ", subtitle = "GEE model (Unstructured WCS), not weightened data") +
+  labs(x = "Year", y = "Social Relationship Satisfaction [0;20] ", color = "GEE model", title = "Evolution of social relationship satisfaction ", subtitle = "GEE model (Unstructured WCS), not weighted data") +
   coord_cartesian(ylim = c(16.3,16.6)) +
   theme_minimal()
 
 rm(list = setdiff(ls(), c("Data", "SC_Clean_pd", "SC_Data_Clean", "model_selection_function")))
 
-#################################
-######### Engagement ############
-#################################
+#######################################
+######### Engagement analysis #########
+#######################################
 
 ################ 
-##### MEM ######
+## 1: MEM ######
 ################ 
 
-
+# A: weighted model
 E_MEM_W<-glmer(Engagement_ ~ Year + Finan_satisfaction_ + Gender + Interview_language_ + Score_Neg_Emotions_ +
                  Mode_of_Data_Collection_ + AGE + (1 | IDPERS) + (1 | IDPERS:IDHOUS), 
                weights = new_weight_, data = SC_Data_Clean, family = binomial(link = "logit"))
 #Model failed to converge 
 tab_model(E_MEM_W)
 summary(E_MEM_W)
-
 check_model(E_MEM_W)
 check_autocorrelation(E_MEM_W) #Warning: Autocorrelated residuals detected (p = 0.002).
 check_outliers(E_MEM_W) # 443 outliers detected, Based on the following method and threshold: cook (0.9),  For variable: (Whole model).
-
 performance:: icc(E_MEM_W, by_group = T)
 #Group         |   ICC
 #IDPERS:IDHOUS | 0.013
 #IDPERS        | 0.595
-
 performance:: icc(glmer(Engagement_ ~ Year + Finan_satisfaction_ + Gender +  Interview_language_ + Score_Neg_Emotions_ +Mode_of_Data_Collection_+ AGE + (1 | IDPERS), weights = new_weight_, data = SC_Data_Clean, family = binomial(link = "logit")), by_group = T)
 # Group  |   ICC
 # IDPERS | 0.601
@@ -1010,22 +854,17 @@ performance:: icc(glmer(Engagement_ ~ Year + Finan_satisfaction_  + Gender +  In
 # Group  |   ICC
 # IDHOUS | 0.541
 
-# Non weightened
+# B: Non weighted model
 E_MEM_UnW<-glmer(Engagement_ ~ Year + Finan_satisfaction_ + Gender + Interview_language_ + Score_Neg_Emotions_ +
                     Mode_of_Data_Collection_ + AGE + (1 | IDPERS) + (1 | IDPERS:IDHOUS), 
                  data = SC_Data_Clean, family = binomial(link = "logit"))
 #Model failed to converge
 tab_model(E_MEM_UnW)
 summary(E_MEM_UnW)
-
-
-performance:: icc(E_MEM_UnW, by_group = T)
-#0.664
+performance:: icc(E_MEM_UnW, by_group = T) #0.664
 check_model(E_MEM_UnW)
 check_autocorrelation(E_MEM_UnW) #Residuals appear to be independent and not autocorrelated (p = 0.984)
 check_outliers(E_MEM_UnW) #79 outliers detected, Based on the following method and threshold: cook (0.9), For variable: (Whole model)
-
-
 performance:: icc(glmer(Engagement_ ~ Year + Finan_satisfaction_  + Gender +  Interview_language_ + Score_Neg_Emotions_ +Mode_of_Data_Collection_+ AGE + (1 | IDPERS), data = SC_Data_Clean, family = binomial(link = "logit")), by_group = T)
 # Group  |   ICC
 # IDPERS | 0.664
@@ -1041,14 +880,15 @@ performance:: icc(glmer(Engagement_ ~ Year + Finan_satisfaction_  + Gender +  In
 
 
 ################
-##### GEE ######
+### 2: GEE #####
 ################
+
+# Formula for engagement analysis
 
 Engagement_f = formula(Engagement_ ~ Year + Finan_satisfaction_ + Gender +  Interview_language_ + Score_Neg_Emotions_ +Mode_of_Data_Collection_+ AGE)
 
 
-### Weigtened data
-
+### weighted models
 g1 <- glmgee(Engagement_f,
              data = SC_Clean_pd,
              weights = new_weight_,
@@ -1056,36 +896,32 @@ g1 <- glmgee(Engagement_f,
              family = binomial("logit"),
              corstr = "unstructured") 
 summary(g1)
-
 g2 <- update(g1,corstr = "exchangeable") 
 summary(g2)
 
-### Non weigtened data
-
+### Non weighted models
 g3 <- glmgee(Engagement_f,
              data = SC_Clean_pd,
              id = (IDPERS:IDHOUS),
              family = binomial("logit"),
              corstr = "unstructured") 
 summary(g3)
-
 g4 <- update(g3,corstr = "exchangeable") 
 summary(g4) 
 
 
-## Table with criterions #GLMGEE
+## Table with criterions 
 model_selection_function(g1, g2, g3, g4)
 
 
 ######################################################################
-##### Weightened analysis, exchangeable WCS (g2 as initial model) ####
+##### weighted analysis, exchangeable WCS (g2 as initial model) ####
 ######################################################################
+
 SC_Clean_pd_w<-SC_Clean_pd
 
 ##### removing influential obs based on Cooks.d
-
 cooks_d <-cooks.distance(g2, level = c("observations")) #4003
-
 N = 4003
 cutoff = 4/ (N) 
 
@@ -1093,6 +929,7 @@ cutoff = 4/ (N)
 influential_obs<-which(cooks_d > cutoff) # 165 id
 SC_Clean_pd_w<-SC_Clean_pd_w[-(which(cooks_d > cutoff)), ] # 3838 obs
 
+# Updated model with clean data
 g2.2 <- update(g2,data = SC_Clean_pd_w)
 summary(g2.2) 
 confint(g2.2)
@@ -1100,42 +937,34 @@ raw_pvalues <- c(0.60437314, 0.63865822,0.54269638, 0.38729345)
 adjusted_pvalues <- p.adjust(raw_pvalues, method = "holm") 
 # 1 1.0000000 1.0000000 1.0000000
 
-#### Effect sizes from LogOR
+# Effect sizes from LogOR
+
 # Year 2018 vs 2019
-logoddsratio_to_d(0.03581)
-#0.01974309
+logoddsratio_to_d(0.03581) #0.01974309
 
 # Year 2019 vs 2020
-logoddsratio_to_d(-0.04670)
-#-0.02574706
+logoddsratio_to_d(-0.04670) #-0.02574706
 
 # Year 2020 vs 2023
-logoddsratio_to_d(0.06424)
-# 0.03541737
+logoddsratio_to_d(0.06424) # 0.03541737
 
 # Finan_satisfaction_ 
-logoddsratio_to_d(0.07534)
-# 0.04153712
+logoddsratio_to_d(0.07534) # 0.04153712
 
 # Gender
-logoddsratio_to_d(0.29628)
-# 0.1633477
+logoddsratio_to_d(0.29628) # 0.1633477
 
 # Interview_language_ 
-logoddsratio_to_d(-0.78883)
-#-0.4349048
+logoddsratio_to_d(-0.78883) #-0.4349048
 
 # Score_Neg_Emotions_ 
-logoddsratio_to_d(-0.01871)
-# -0.01031536
+logoddsratio_to_d(-0.01871) # -0.01031536
 
 #Mode_of_Data_Collection_ 
-logoddsratio_to_d(-0.25552)
-# -0.1408756
+logoddsratio_to_d(-0.25552) # -0.1408756
 
 #AGE
-logoddsratio_to_d(-0.01840)
-# -0.01014445
+logoddsratio_to_d(-0.01840) # -0.01014445
 
 
 ###############
@@ -1193,41 +1022,13 @@ ggplot(combined_data_x, aes(x = Year, y = prop, color = Model, group = Model)) +
   geom_point(size = 3) +
   geom_text(aes(label = round(prop, 2)), vjust = -0.5, color = "black", size = 5) +  # Add values on the points
   scale_color_manual(values = c( "Adjusted model" = "deeppink3", "Raw model" = "slateblue")) +  # Customize colors
-  labs(x = "Year", y = "Engagement [0;1] ", color = "GEE model", title = "Evolution of engagement ", subtitle = "GEE model (Exchangeable WCS), weightened data") +
+  labs(x = "Year", y = "Engagement [0;1] ", color = "GEE model", title = "Evolution of engagement ", subtitle = "GEE model (Exchangeable WCS), weighted data") +
   coord_cartesian(ylim = c(0.4,0.55)) +
   theme_minimal()
 
 
-# Calculate the weighted prop
-
-observed_plot <- ggplot(observed_prop, aes(x = Year, y = prop)) +
-  geom_errorbar(aes(ymin = prop - se, ymax = prop + se), width = 0.2) +
-  geom_point(color = "lightsalmon", size = 3) +
-  geom_text(aes(label = round(prop, 2)), vjust = -0.5, color = "lightsalmon", size = 5) +
-  labs(x = "Year", y="Observation")+ 
-  coord_cartesian(ylim = c(0.4,0.6)) 
-
-predicted_ad <- ggplot(observed_prop_ad, aes(x = Year, y = prop)) +
-  geom_errorbar(aes(ymin = prop - se, ymax = prop + se), width = 0.2) +
-  geom_point(color = "plum4", size = 3) +
-  geom_text(aes(label = round(prop, 2)), vjust = -0.5, color = "plum4", size = 5) +
-  labs(x = "Year", y = " Adjusted model")+ 
-  coord_cartesian(ylim = c(0.4,0.6)) 
-
-predicted_unad <- ggplot(observed_prop_unad, aes(x = Year, y = prop)) +
-  geom_errorbar(aes(ymin = prop - se, ymax = prop + se), width = 0.2) +
-  geom_point(color = "skyblue3", size = 3) +
-  geom_text(aes(label = round(prop, 2)), vjust = -0.5, color = "skyblue3", size = 5) +
-  labs(x = "Year", y = " Unadjasted model")+ 
-  coord_cartesian(ylim = c(0.4,0.6)) 
-
-
-title_plot <- ggdraw() + draw_label("Engagement, weightened data", fontface = 'bold')
-cowplot::plot_grid(title_plot, observed_plot, predicted_ad, predicted_unad)
-
-
 ########################################################################
-##### Unweightened analysis, exchangeable WCS (g4 as initial model) ####
+##### Unweighted analysis, exchangeable WCS (g4 as initial model) ####
 ########################################################################
 SC_Clean_pd_u<-SC_Clean_pd
 
@@ -1292,7 +1093,6 @@ colnames(observed_prop_unad) <- c("Year", "prop", "se", "sd")
 
 
 # Combine the data
-
 combined_data_x <- rbind(
   transform(observed_prop, Model = "Adjusted model"),
   transform(observed_prop_unad, Model = "Raw model")
@@ -1302,34 +1102,10 @@ ggplot(combined_data_x, aes(x = Year, y = prop, color = Model, group = Model)) +
   geom_point(size = 3) +
   geom_text(aes(label = round(prop, 2)), vjust = -0.5, color = "black", size = 5) +  # Add values on the points
   scale_color_manual(values = c( "Adjusted model" = "deeppink3", "Raw model" = "slateblue")) +  # Customize colors
-  labs(x = "Year", y = "Engagement [0;1] ", color = "GEE model", title = "Evolution of engagement ", subtitle = "GEE model (Exchangeable WCS), non weightened data") +
+  labs(x = "Year", y = "Engagement [0;1] ", color = "GEE model", title = "Evolution of engagement ", subtitle = "GEE model (Exchangeable WCS), non weighted data") +
   coord_cartesian(ylim = c(0.4,0.55)) +
   theme_minimal()
 
 
-# Calculate the weighted prop
-
-observed_plot <- ggplot(observed_prop, aes(x = Year, y = prop)) +
-  geom_errorbar(aes(ymin = prop - se, ymax = prop + se), width = 0.2) +
-  geom_point(color = "lightsalmon", size = 3) +
-  geom_text(aes(label = round(prop, 2)), vjust = -0.5, color = "lightsalmon", size = 5) +
-  labs(x = "Year", y="Observation")+ 
-  coord_cartesian(ylim = c(0.4,0.6)) 
-
-predicted_ad <- ggplot(observed_prop_ad, aes(x = Year, y = prop)) +
-  geom_errorbar(aes(ymin = prop - se, ymax = prop + se), width = 0.2) +
-  geom_point(color = "plum4", size = 3) +
-  geom_text(aes(label = round(prop, 2)), vjust = -0.5, color = "plum4", size = 5) +
-  labs(x = "Year", y = " Adjusted model")+ 
-  coord_cartesian(ylim = c(0.4,0.6)) 
-
-predicted_unad <- ggplot(observed_prop_unad, aes(x = Year, y = prop)) +
-  geom_errorbar(aes(ymin = prop - se, ymax = prop + se), width = 0.2) +
-  geom_point(color = "skyblue3", size = 3) +
-  geom_text(aes(label = round(prop, 2)), vjust = -0.5, color = "skyblue3", size = 5) +
-  labs(x = "Year", y = " Unadjasted model")+ 
-  coord_cartesian(ylim = c(0.4,0.6)) 
-
-
-title_plot <- ggdraw() + draw_label("Engagement, non weightened data", fontface = 'bold')
+title_plot <- ggdraw() + draw_label("Engagement, non weighted data", fontface = 'bold')
 cowplot::plot_grid(title_plot, observed_plot, predicted_ad, predicted_unad)

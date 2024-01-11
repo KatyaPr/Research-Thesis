@@ -21,46 +21,37 @@ library(sjPlot)
 library(codingMatrices)
 library(glmtoolbox)
 
-
 ######################
 ## Importing dataset #
 ######################
 rm(list = ls())
-
-
 Data<-read_excel("C:/Users/.../Created datasets/Social_cohesion_17_20_long.xlsx")
 Data %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) # 2121  unique IDPERS answered
 
 ###########################################
 ####  Adjustment factors selection  #######
 ###########################################
-
 # Age as numeric
 Data$AGE <- as.numeric(Data$AGE )
 # Financial satisfaction as numeric 
 Data$Finan_satisfaction_ <- as.numeric(Data$Finan_satisfaction_ )
 # Health_Status_ as numeric 
 Data$Health_Status_ <- as.numeric(Data$Health_Status_ )
-
 # Convert Interview_language_ to a factor
 Data$Interview_language_ <- as.factor(Data$Interview_language_ )
 levels(Data$Interview_language_)
 Data$Interview_language_ <- relevel(Data$Interview_language_, ref = "German")
-
 # Convert Gender & IDHOUS to a factor
 Data$Gender <- as.factor(Data$Gender)
 Data$IDHOUS <- as.factor(Data$IDHOUS)
-
 # Convert Mode_of_Data_Collection_ to a factor
 Data$Mode_of_Data_Collection_ <- as.factor(Data$Mode_of_Data_Collection_ )
 levels(Data$Mode_of_Data_Collection_)
 Data$Mode_of_Data_Collection_ <- relevel(Data$Mode_of_Data_Collection_, ref = "CATI")
-
-
 # Removing all NA in weights
 Data <- Data[complete.cases(Data$new_weight_), ]
 Data %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) # 2121
-
+# Reincoding year variable
 Data <- Data %>%
   mutate(Year = case_when(
     Year == 17 ~ 2017,
@@ -69,10 +60,8 @@ Data <- Data %>%
   ))
 Data$Year <- as.factor(Data$Year)
 
-
+# Crestion of the appropriate dataset with variables that i'll use
 SC_Data <- Data[, c("IDPERS", "Openness_", "Macro_L_","IDHOUS", "new_weight_", "Year", "Score_Neg_Emotions_", "Finan_satisfaction_", "Gender", "Mode_of_Data_Collection_", "Interview_language_", "AGE")]
-
-
 # Removing all NA for the dataset
 SC_Data_Clean <- na.omit(SC_Data) # 1852 X 12
 SC_Data_Clean %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) # 1557
@@ -81,9 +70,10 @@ SC_Data_Clean$wave<- as.factor(SC_Data_Clean$Year)
 SC_Data_Clean$Year<-as.factor(SC_Data_Clean$Year)
 contrasts(SC_Data_Clean$Year) <- code_diff
 
-
-
+#######################
 ##### Summary Stat ####
+#######################
+
 summary_Macro_L <- SC_Data_Clean %>% 
   group_by(Year) %>% 
   summarize(
@@ -120,17 +110,16 @@ p<-ggplot(summary_stats_Openness, aes(x = factor(Year), y = proportion, fill = f
 
 cowplot::plot_grid(f,p, nrow = 2)
 
-#######################################
-########   Macro Level SC ############
-#######################################
+##############################################
+########  Macro Level SC analysis ############
+##############################################
 
 
-################ 
-##### MEM ######
-################ 
+################### 
+##### 1: MEM ######
+################### 
 
-
-# Weightened
+# A: Weightened
 Macro_MEM_W <- lmer(Macro_L_ ~ Year + Finan_satisfaction_ + Gender +  
                       Interview_language_ + Score_Neg_Emotions_ + Mode_of_Data_Collection_+
                       AGE + (1 | IDPERS) + (1|IDPERS:IDHOUS), weights = new_weight_, data = SC_Data_Clean)
@@ -166,7 +155,7 @@ performance:: icc(lmer(Macro_L_ ~ Year + Finan_satisfaction_ + Gender +
 # Group  |   ICC
 # IDHOUS |0.462
 
-# Non weightened
+# B: Non weightened
 Macro_MEM_UnW <- lmer(Macro_L_ ~ Year + Finan_satisfaction_ + Gender +  
                     Interview_language_ + Score_Neg_Emotions_  +
                     Mode_of_Data_Collection_+ AGE + (1 | IDPERS) + (1|IDPERS:IDHOUS),  data = SC_Data_Clean)
@@ -202,20 +191,23 @@ performance:: icc(lmer(Macro_L_ ~ Year + Finan_satisfaction_  + Gender +
 # IDHOUS |0.315
 
 
-################
-##### GEE ######
-################
+##################
+##### 2: GEE #####
+##################
+
+# Reformatting data to panel format 
 SC_Data_Clean$wave<-SC_Data_Clean$Year
 SC_Clean_pd <- panel_data(SC_Data_Clean, id = IDPERS, wave = wave) # Dataset preparation -> need to be clean
 SC_Clean_pd <- SC_Clean_pd[order(SC_Clean_pd$IDPERS), ]
 SC_Clean_pd <- SC_Clean_pd[order(SC_Clean_pd$wave), ]
 
+# Formula to be used
 MacL_f = formula(Macro_L_ ~ Year + Finan_satisfaction_ + Gender +  
                    Interview_language_ + Score_Neg_Emotions_ +
                    Mode_of_Data_Collection_+ AGE)
 
 
-### Weigtened data
+# Weigtened model
 
 g1 <- glmgee(MacL_f,
              data = SC_Clean_pd,
@@ -225,7 +217,7 @@ g1 <- glmgee(MacL_f,
 
 summary(g1)
 
-### Non weigtened data
+### Non weigtened model
 
 g3 <- glmgee(MacL_f,
              data = SC_Clean_pd,
@@ -235,14 +227,12 @@ summary(g3)
 
 
 ######################################################################
-##### Weightened analysis, unstructured WCS (g1 as initial model) ####
+##### Weightened analysis, exchangeable WCS (g1 as initial model) ####
 ######################################################################
 SC_Clean_pd_w<-SC_Clean_pd
 
 ##### removing influential obs based on Cooks.d
-
 cooks_d <-cooks.distance(g1, level = c("observations")) # 1852 (as number of total id)
-
 N = 1852
 cutoff = 4/ (N) # 0.002159827
 
@@ -250,16 +240,16 @@ cutoff = 4/ (N) # 0.002159827
 influential_obs<-which(cooks_d > cutoff) # 98 id
 SC_Clean_pd_w<-SC_Clean_pd_w[-(which(cooks_d > cutoff)), ] # 1754 obs
 
-g1.2 <- update(g1,data = SC_Clean_pd_w)
+g1.2 <- update(g1,data = SC_Clean_pd_w) # Update the initial equation
 summary(g1.2) # 1534  clusters (vs 1619 for g1), and dispersion parameter is lower (12.9 vs 19.8)
 confint(g1.2)
 raw_pvalues <- c(2.22e-16, 5.0461e-05)
 adjusted_pvalues <- p.adjust(raw_pvalues, method = "holm") 
 # 4.4400e-16 5.0461e-05
 
-###############
-##### plot ####
-###############
+###############################
+##### plot and effect size ####
+###############################
 
 # 1) Create an unadjusted model
 
@@ -281,15 +271,10 @@ SC_Clean_pd_w$predicted_unad <- predict(g1.2_unad, type = "link")
 
 survey_design_w<- svydesign(ids = ~IDPERS, weights = SC_Clean_pd_w$new_weight_, data = SC_Clean_pd_w)
 
-# 3) Plot the models
+# 3) Plot the models + effect size
 
-# Calculate the weighted mean
-observed_means <- svyby(~Macro_L_, ~Year, design = survey_design_w, FUN = svymean)
-r <- svyby(~Macro_L_, by = ~Year, design = survey_design_w, svyvar) 
-sd <- sqrt(r$Macro_L_)
-observed_means$sd <- sd
-colnames(observed_means) <- c("Year", "mean", "se", "sd")
 
+#  A: Effect size  
 ## Function to calculate hudges g
 calculate_hedges_g <- function(data, grouping_var, response_var) {
   # Ensure that the grouping variable is a factor
@@ -351,17 +336,13 @@ calculate_hedges_g(data = survey_design_w,
                    response_var = "Macro_L_")
 # Language effect size -0.1680379
 
-
+# B : plot 
 # Calculate the weighted mean from unad model for Mode of Data Collection
 observed_means_data <- svyby(~Macro_L_, ~Mode_of_Data_Collection_, design = survey_design_w, FUN = svymean)
 r <- svyby(~Macro_L_, by = ~Mode_of_Data_Collection_, design = survey_design_w, svyvar) 
 sd <- sqrt(r$Macro_L_)
 observed_means_data$sd <- sd
-svytotal(~Mode_of_Data_Collection_, design = survey_design_w)
 colnames(observed_means_data) <- c("Year", "mean", "se", "sd")
-(18.58884 - 18.26823)/sqrt(((1234.42 - 1) * 3.920081^2 + 
-                              (332.26 - 1) * 4.037193^2) / 
-                             (1234.42 + 332.26 - 2))
 
 # Calculate the weighted mean from ad model
 observed_means_ad <- svyby(~predicted_ad, ~Year, design = survey_design_w, FUN = svymean)
@@ -421,7 +402,7 @@ cowplot::plot_grid(title_plot, observed_plot, predicted_ad, predicted_unad)
 
 
 ########################################################################
-##### Unweightened analysis, unstructured WCS (g3 as initial model) ####
+##### Unweightened analysis, exchangeable WCS (g3 as initial model) ####
 ########################################################################
 SC_Clean_pd_u<-SC_Clean_pd
 
@@ -531,17 +512,15 @@ cowplot::plot_grid(title_plot, observed_plot, predicted_ad, predicted_unad)
 
 rm(list = setdiff(ls(), c("Data", "SC_Clean_pd", "SC_Data_Clean", "calculate_hedges_g")))
 
+########################################
+######### Openness analysis ############
+########################################
 
-###############################
-######### Openness ############
-###############################
+######################
+######## 1: MEM ######
+######################
 
-################ 
-##### MEM ######
-################ 
-
-# 1) Contrast treatment with code_diff
-
+# A: Weightened
 O_MEM_W<-glmer(Openness_ ~ Year + Finan_satisfaction_  + Gender +  
                  Interview_language_ + Score_Neg_Emotions_ +
                  Mode_of_Data_Collection_+ AGE + (1 | IDPERS) + (1 | IDPERS:IDHOUS), 
@@ -581,7 +560,7 @@ performance:: icc(glmer(Openness_ ~ Year + Finan_satisfaction_ + Gender +
 #  Model failed to converge 
 
 
-# Non weightened
+# B: Not Weightened
 O_MEM_UnW<-glmer(Openness_ ~ Year + Finan_satisfaction_ + Gender +  
                    Interview_language_ + Score_Neg_Emotions_ +
                    Mode_of_Data_Collection_+ AGE + (1 | IDPERS) + (1 | IDPERS:IDHOUS), 
@@ -589,7 +568,6 @@ O_MEM_UnW<-glmer(Openness_ ~ Year + Finan_satisfaction_ + Gender +
 #  Model failed to converge 
 
 tab_model(O_MEM_UnW)
-
 
 performance:: icc(O_MEM_UnW, by_group = T)
 # Group         |   ICC
@@ -627,15 +605,14 @@ performance:: icc(glmer(Openness_ ~ Year + Finan_satisfaction_  + Gender +
 #  Model failed to converge
 
 
-################
-##### GEE ######
-################
+###################
+##### 2: GEE ######
+###################
 
 Openness_f = formula(Openness_ ~ Year + Finan_satisfaction_ + Gender +  
   Interview_language_ + Score_Neg_Emotions_ +  Mode_of_Data_Collection_+ AGE) 
 
-### Weigtened data
-
+### Weigtened model
 g1 <- glmgee(Openness_f,
              data = SC_Clean_pd,
              weights = new_weight_,
@@ -644,8 +621,7 @@ g1 <- glmgee(Openness_f,
              corstr = "exchangeable") 
 summary(g1)
 
-### Non weigtened data
-
+### Non weigtened model
 g3 <- glmgee(Openness_f,
              data = SC_Clean_pd,
              id = (IDPERS:IDHOUS),
@@ -653,16 +629,14 @@ g3 <- glmgee(Openness_f,
              corstr = "exchangeable") 
 summary(g3)
 
+######################################################################
+##### Weightened analysis, exchangeable WCS (g1 as initial model) ####
+######################################################################
 
-######################################################################
-##### Weightened analysis, unstructured WCS (g1 as initial model) ####
-######################################################################
 SC_Clean_pd_w<-SC_Clean_pd
 
 ##### removing influential obs based on Cooks.d
-
 cooks_d <-cooks.distance(g1, level = c("observations")) # 1852 (as number of total id)
-
 N = 1852
 cutoff = 4/ (N) # 0.002159827
 
@@ -670,6 +644,7 @@ cutoff = 4/ (N) # 0.002159827
 influential_obs<-which(cooks_d > cutoff) # 106 id
 SC_Clean_pd_w<-SC_Clean_pd_w[-(which(cooks_d > cutoff)), ] # 1746 obs
 
+# New model without influential observations
 g1.2 <- update(g1, data = SC_Clean_pd_w)
 summary(g1.2) 
 confint(g1.2)
@@ -679,34 +654,21 @@ adjusted_pvalues <- p.adjust(raw_pvalues, method = "holm")
 
 
 ### Effect sizes from LogOR
+
 # Year 2017 vs 2020
-logoddsratio_to_d(0.17450)
-#0.09620689
-
+logoddsratio_to_d(0.17450) #0.09620689
 # Finan_satisfaction_ 
-logoddsratio_to_d(-0.00771)
-# -0.004250746
-
+logoddsratio_to_d(-0.00771) # -0.004250746
 # Gender
-logoddsratio_to_d(0.03227)
-# 0.01779138
-
+logoddsratio_to_d(0.03227) # 0.01779138
 # Interview_language_ 
-logoddsratio_to_d(-0.65516)
-#-0.3612086
-
+logoddsratio_to_d(-0.65516) #-0.3612086
 # Score_Neg_Emotions_ 
-logoddsratio_to_d(0.01967)
-# 0.01084464
-
+logoddsratio_to_d(0.01967) # 0.01084464
 #Mode_of_Data_Collection_ 
-logoddsratio_to_d(-0.75197)
-# -0.4145828
-
+logoddsratio_to_d(-0.75197) # -0.4145828
 #AGE
-logoddsratio_to_d(-0.03159)
-# -0.01741648
-
+logoddsratio_to_d(-0.03159) # -0.01741648
 
 ###############
 ##### plot ####
@@ -795,14 +757,14 @@ cowplot::plot_grid(title_plot, observed_plot, predicted_ad, predicted_unad)
 
 
 ########################################################################
-##### Unweightened analysis, unstructured WCS (g3 as initial model) ####
+##### Unweightened analysis, exchangeable WCS (g3 as initial model) ####
 ########################################################################
+
 SC_Clean_pd_u<-SC_Clean_pd
 
 ##### removing influential obs based on Cooks.d
 
 cooks_d <-cooks.distance(g3, level = c("observations")) # 1852 (as number of total id)
-
 N = 1852
 cutoff = 4/ (N) # 0.002159827
 

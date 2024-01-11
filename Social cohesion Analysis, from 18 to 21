@@ -452,7 +452,7 @@ SC_Clean_pd_u<-SC_Clean_pd
 
 ##### removing influential obs based on Cooks.d
 cooks_d <-cooks.distance(g3, level = c("observations")) # 4003 (as number of total id)
-
+cutoff = 4/ (length(cooks_d))
 
 # Identify influential observations
 influential_obs<-which(cooks_d > cutoff) # 226 id
@@ -624,8 +624,7 @@ SC_Clean_pd_w<-SC_Clean_pd
 
 ##### removing influential obs based on Cooks.d
 cooks_d <-cooks.distance(g1, level = c("observations")) # 4003 (as number of total id)
-N = 4003
-cutoff = 4/ (N) #0.0009992506
+cutoff = 4/ length(cooks_d) #0.0009992506
 
 # Identify influential observations
 influential_obs<-which(cooks_d > cutoff) # 147 id
@@ -744,9 +743,8 @@ ggplot(combined_data_x, aes(x = Year, y = mean, color = Model, group = Model)) +
 SC_Clean_pd_u<-SC_Clean_pd
 
 ##### removing influential obs based on Cooks.d
-
 cooks_d <-cooks.distance(g3, level = c("observations")) 
-
+cutoff = 4/ (length(cooks_d))
 
 # Identify influential observations
 influential_obs<-which(cooks_d > cutoff) # 175 id
@@ -922,8 +920,7 @@ SC_Clean_pd_w<-SC_Clean_pd
 
 ##### removing influential obs based on Cooks.d
 cooks_d <-cooks.distance(g2, level = c("observations")) #4003
-N = 4003
-cutoff = 4/ (N) 
+cutoff = 4/ length(cooks_d) 
 
 # Identify influential observations
 influential_obs<-which(cooks_d > cutoff) # 165 id
@@ -1033,8 +1030,8 @@ ggplot(combined_data_x, aes(x = Year, y = prop, color = Model, group = Model)) +
 SC_Clean_pd_u<-SC_Clean_pd
 
 ##### removing influential obs based on Cooks.d
-
 cooks_d <-cooks.distance(g4, level = c("observations")) 
+cutoff = 4/ (length(cooks_d)) 
 # Identify influential observations
 influential_obs<-which(cooks_d > cutoff) # 169 id
 SC_Clean_pd_u<-SC_Clean_pd_u[-(which(cooks_d > cutoff)), ] # 3834 obs

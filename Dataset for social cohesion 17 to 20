@@ -28,16 +28,13 @@ merged_EA_completed<- merged_EA_completed %>%
   filter(STATUS17 == 0 |STATUS20 == 0 ) #2121
 
 
-# 1) Creation of Macro Level Variable
-
+# 1) Selection of Macro Level Variable for the outcome
 # Overall satisfaction with democracy -> I will use it
 merged_EA_completed %>% filter (STATUS17==0) %>% tabyl(P17P02, ) %>% adorn_totals("row") # 27 NA
 merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(P20P02, ) %>% adorn_totals("row") # 85 NA
-
 # Feeling about political influence -> I will use it
 merged_EA_completed %>% filter (STATUS17==0) %>% tabyl(P17P03, ) %>% adorn_totals("row") # 10 NA
 merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(P20P03, ) %>% adorn_totals("row") # 68 NA
-
 # Trust in Federal Government
 merged_EA_completed %>% filter (STATUS17==0) %>% tabyl(P17P04, ) %>% adorn_totals("row") # 20 NA
 merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(P20P04, ) %>% adorn_totals("row") # 77 NA
@@ -51,10 +48,7 @@ merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(P20P15, ) %>% adorn_total
 #### Openness #####
 ###################
 
-
-#############
-#### 17 #####
-#############
+# 2017
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
     Openness_17 = ifelse(
@@ -65,14 +59,9 @@ merged_EA_completed <- merged_EA_completed %>%
              )
       )
     )
-
-
 merged_EA_completed %>% filter (STATUS17==0) %>% tabyl(Openness_17, ) %>% adorn_totals("row") # 33 NA
 
-#############
-#### 20 #####
-#############
-
+# 2020 
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
     Openness_20 = ifelse(
@@ -83,20 +72,13 @@ merged_EA_completed <- merged_EA_completed %>%
       )
     )
   )
-
-
-
 merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(Openness_20, ) %>% adorn_totals("row") # 91 NA
 
 ##################
 #### Macro_L #####
 ##################
 
-
-#############
-#### 17 #####
-#############
-
+# 2017
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
     Macro_L_17 = ifelse(
@@ -113,11 +95,7 @@ merged_EA_completed <- merged_EA_completed %>%
 merged_EA_completed %>% filter (STATUS17==0) %>% tabyl(Macro_L_17, ) %>% adorn_totals("row") # 34 NA
 
 
-
-#############
-#### 20 #####
-#############
-
+# 2020
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
     Macro_L_20 = ifelse(
@@ -136,12 +114,11 @@ merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(Macro_L_20, ) %>% adorn_t
 
 
 ################################################
-######   Addint potential adjustment factors ###
+######   Adding potential adjustment factors ###
 ######            Mental health              ###
 ################################################
 
-# 1) Listlessness score creation
-
+# 1) Listlessness score 
 # 2017
 merged_EA_completed <- merged_EA_completed %>%   mutate(
   Score_Listlessness_17 = ifelse(
@@ -154,7 +131,6 @@ merged_EA_completed <- merged_EA_completed %>%   mutate(
     )
   )
 )
-
 
 # 2020
 merged_EA_completed <- merged_EA_completed %>%   mutate(
@@ -169,10 +145,7 @@ merged_EA_completed <- merged_EA_completed %>%   mutate(
   )
 )
 
-
-# 2) Life satisfaction creation    
-
-
+# 2) Life satisfaction   
 # 2017
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -193,8 +166,7 @@ merged_EA_completed <- merged_EA_completed %>%
   )
 
 
-# 3) Emotion score creation 
-
+# 3) Negative Emotion score c
 # 2017
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -211,7 +183,6 @@ merged_EA_completed <- merged_EA_completed %>%
       )
     )
   )
-
 # 2020
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -248,8 +219,6 @@ Dataset <- merged_EA_completed %>%
                 starts_with("Score_Listlessness"), starts_with("LS"),
                 starts_with("Openness_"), starts_with("Macro_L_")
   )
-
-
 
 
 # 2) Reencode variables for 17
@@ -559,7 +528,6 @@ Dataset_wide %>%
   distinct() %>%
   n_distinct() #2121
 
-
 # Select the columns with IDPERS and scores for different years
 selected_cols <- Dataset_wide %>%
   dplyr::select(IDPERS, ends_with("17"), ends_with("20"))
@@ -569,15 +537,12 @@ pivoted_data <- selected_cols %>%
   pivot_longer(cols = -IDPERS,
                names_to = c(".value", "Year"),
                names_pattern = "(.*)(17|20)$")
-
-
 pivoted_data %>% tabyl(AGE, Year)
 
 pivoted_data <- pivoted_data %>%
   mutate(Gender = ifelse(SEX == 1, "Male", "Female"))
 
 Dataset_long<-pivoted_data
-
 
 write_xlsx(Dataset_long, path = "C:/Users/.../Created datasets/Social_cohesion_17_20_long.xlsx")
 write_xlsx(Dataset_wide, path = "C:/Users/.../Created datasets/Social_cohesion_17_20_wide.xlsx")

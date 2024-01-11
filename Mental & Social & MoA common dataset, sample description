@@ -1,4 +1,8 @@
-########### Commmon dataset for MoA & Mental health & SC (18 to 21) ################
+#######################################################################################
+########### Commmon dataset for MoA & Mental health & SC ##############################
+################ Variables from 2018 to 2021 ##########################################
+#######################################################################################
+
 library(foreign)
 library(stats)
 library(stringr)
@@ -23,15 +27,14 @@ dim(merged_EA_completed) # 2544 3547
 merged_EA_completed<- merged_EA_completed %>% 
   filter(STATUS18 == 0 | STATUS19 == 0 | STATUS20 == 0 | STATUS21 == 0)
 
-
-#################################
-######  Social Cosesion  ########
-#################################
+###############################
+######  Social Cosesion  ######
+#### Outcome construction #####
+###############################
 
 # 1) Engagement 
 
 # 2018
-
 merged_EA_completed <- merged_EA_completed %>%
   mutate(
     P18N34 = ifelse(P18N34 < 0, NA, P18N34), # Replace negative values with NA
@@ -43,13 +46,10 @@ merged_EA_completed <- merged_EA_completed %>%
       P18N34 == 1 & P18N35 == 2 ~ 1,
     )
   )
-
-
 merged_EA_completed %>% filter (STATUS18==0) %>% tabyl(P18N34, P18N35) %>% adorn_totals("row")
 merged_EA_completed %>% filter (STATUS18==0) %>% tabyl(Engagement_18, ) %>% adorn_totals("row")
 
 # 2019
-
 merged_EA_completed <- merged_EA_completed %>%
   mutate(
     P19N34 = ifelse(P19N34 < 0, NA, P19N34), # Replace negative values with NA
@@ -61,13 +61,10 @@ merged_EA_completed <- merged_EA_completed %>%
       P19N34 == 1 & P19N35 == 2 ~ 1,
     )
   )
-
-
 merged_EA_completed %>% filter (STATUS19==0) %>% tabyl(P19N34, P19N35) %>% adorn_totals("row")
 merged_EA_completed %>% filter (STATUS19==0) %>% tabyl(Engagement_19, ) %>% adorn_totals("row")
 
 # 2020
-
 merged_EA_completed <- merged_EA_completed %>%
   mutate(
     P20N34 = ifelse(P20N34 < 0, NA, P20N34), # Replace negative values with NA
@@ -79,13 +76,10 @@ merged_EA_completed <- merged_EA_completed %>%
       P20N34 == 1 & P20N35 == 2 ~ 1,
     )
   )
-
-
 merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(P20N34, P20N35) %>% adorn_totals("row")
 merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(Engagement_20, ) %>% adorn_totals("row")
 
 # 2021
-
 merged_EA_completed <- merged_EA_completed %>%
   mutate(
     P21N34 = ifelse(P21N34 < 0, NA, P21N34), # Replace negative values with NA
@@ -97,8 +91,6 @@ merged_EA_completed <- merged_EA_completed %>%
       P21N34 == 1 & P21N35 == 2 ~ 1,
     )
   )
-
-
 merged_EA_completed %>% filter (STATUS21==0) %>% tabyl(P21N34, P21N35) %>% adorn_totals("row")
 merged_EA_completed %>% filter (STATUS21==0) %>% tabyl(Engagement_21, ) %>% adorn_totals("row")
 
@@ -106,7 +98,6 @@ merged_EA_completed %>% filter (STATUS21==0) %>% tabyl(Engagement_21, ) %>% ador
 # 2)   Trust in people
 
 # 2018
-
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
     Trust_18 = ifelse(
@@ -115,12 +106,10 @@ merged_EA_completed <- merged_EA_completed %>%
       as.numeric(
         ifelse(P18P45 %in% c(-8, -7, -3, -2, -1), NA, P18P45)))
   )
-
 merged_EA_completed %>% filter (STATUS18==0) %>% tabyl(P18P45, Trust_18) %>% adorn_totals("row")
 
 
 # 2019
-
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
     Trust_19 = ifelse(
@@ -129,12 +118,10 @@ merged_EA_completed <- merged_EA_completed %>%
       as.numeric(
         ifelse(P19P45 %in% c(-8, -7, -3, -2, -1), NA, P19P45)))
   )
-
 merged_EA_completed %>% filter (STATUS19==0) %>% tabyl(P19P45, Trust_19) %>% adorn_totals("row")
 
 
 # 2020
-
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
     Trust_20 = ifelse(
@@ -143,12 +130,10 @@ merged_EA_completed <- merged_EA_completed %>%
       as.numeric(
         ifelse(P20P45 %in% c(-8, -7, -3, -2, -1), NA, P20P45)))
   )
-
 merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(P20P45, Trust_20) %>% adorn_totals("row")
 
 
 # 2021
-
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
     Trust_21 = ifelse(
@@ -157,16 +142,13 @@ merged_EA_completed <- merged_EA_completed %>%
       as.numeric(
         ifelse(P21P45 %in% c(-8, -7, -3, -2, -1), NA, P21P45)))
   )
-
 merged_EA_completed %>% filter (STATUS21==0) %>% tabyl(P21P45, Trust_21) %>% adorn_totals("row")
 
 
-
-# 3) Social relationship satisfaction   
+# 3) Social relationships satisfaction   
 
 # 2018
-
-merged_EA_completed <- merged_EA_completed %>%
+merged_EA_completed <- merged_EA_completed %>% # intermediate variable that measures satisfaction with collegues and or pupils
   mutate(WES_18 = ifelse(STATUS18 != 0, NA,
                        ifelse(P18YTH07 >= 0 & P18W94 < 0, P18YTH07,
                               ifelse(P18W94 >= 0 & P18YTH07 < 0, P18W94,
@@ -175,9 +157,7 @@ merged_EA_completed <- merged_EA_completed %>%
 
 
 merged_EA_completed%>% filter (STATUS18==0) %>% tabyl(P18YTH07,P18W94 ) %>% adorn_totals("row") #66NA
-
 merged_EA_completed%>% filter (STATUS18==0) %>% tabyl(WES_18, ) # 66 NA
-
 
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -190,13 +170,10 @@ merged_EA_completed <- merged_EA_completed %>%
       )
     )
   )
-
 merged_EA_completed %>% filter (STATUS18==0) %>% tabyl(SRS_18, ) %>% adorn_totals("row") 
-
 merged_EA_completed%>% filter (STATUS18==0) %>% tabyl(WES_18,SRS_18 ) %>% adorn_totals("row") 
 
-
-merged_EA_completed <- merged_EA_completed %>% 
+merged_EA_completed <- merged_EA_completed %>%  # Only for personnal relationship satisfaction
   mutate(
     PRS_18 = ifelse(
       is.na(STATUS18), 
@@ -206,7 +183,6 @@ merged_EA_completed <- merged_EA_completed %>%
   )
 
 # 2019
-
 merged_EA_completed <- merged_EA_completed %>%
   mutate(WES_19 = ifelse(STATUS19 != 0, NA,
                          ifelse(P19YTH07 >= 0 & P19W94 < 0, P19YTH07,
@@ -216,9 +192,7 @@ merged_EA_completed <- merged_EA_completed %>%
 
 
 merged_EA_completed%>% filter (STATUS19==0) %>% tabyl(P19YTH07,P19W94 ) %>% adorn_totals("row")
-
 merged_EA_completed%>% filter (STATUS19==0) %>% tabyl(WES_19, ) 
-
 
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -231,11 +205,8 @@ merged_EA_completed <- merged_EA_completed %>%
       )
     )
   )
-
 merged_EA_completed %>% filter (STATUS19==0) %>% tabyl(SRS_19, P19QL04) %>% adorn_totals("row") 
-
 merged_EA_completed%>% filter (STATUS19==0) %>% tabyl(WES_19,SRS_19 ) %>% adorn_totals("row") 
-
 
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -247,7 +218,6 @@ merged_EA_completed <- merged_EA_completed %>%
   )
 
 # 2020
-
 merged_EA_completed <- merged_EA_completed %>%
   mutate(WES_20 = ifelse(STATUS20 != 0, NA,
                          ifelse(P20YTH07 >= 0 & P20W94 < 0, P20YTH07,
@@ -255,11 +225,8 @@ merged_EA_completed <- merged_EA_completed %>%
                                        ifelse(P20W94 >= 0 & P20YTH07 >= 0, (P20W94 + P20YTH07)/2,
                                               ifelse(P20W94 < 0 & P20YTH07 < 0, NA, NA))))))
 
-
 merged_EA_completed%>% filter (STATUS20==0) %>% tabyl(P20YTH07,P20W94 ) %>% adorn_totals("row") #66NA
-
 merged_EA_completed%>% filter (STATUS20==0) %>% tabyl(WES_20, ) # 66 NA
-
 
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -272,11 +239,8 @@ merged_EA_completed <- merged_EA_completed %>%
       )
     )
   )
-
 merged_EA_completed %>% filter (STATUS20==0) %>% tabyl(SRS_20, ) %>% adorn_totals("row") 
-
 merged_EA_completed%>% filter (STATUS20==0) %>% tabyl(WES_20,SRS_20 ) %>% adorn_totals("row") 
-
 
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -288,7 +252,6 @@ merged_EA_completed <- merged_EA_completed %>%
   )
 
 # 2021
-
 merged_EA_completed <- merged_EA_completed %>%
   mutate(WES_21 = ifelse(STATUS21 != 0, NA,
                          ifelse(P21YTH07 >= 0 & P21W94 < 0, P21YTH07,
@@ -298,9 +261,7 @@ merged_EA_completed <- merged_EA_completed %>%
 
 
 merged_EA_completed%>% filter (STATUS21==0) %>% tabyl(P21YTH07,P21W94 ) %>% adorn_totals("row")
-
 merged_EA_completed%>% filter (STATUS21==0) %>% tabyl(WES_21, ) 
-
 
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -313,11 +274,8 @@ merged_EA_completed <- merged_EA_completed %>%
       )
     )
   )
-
 merged_EA_completed %>% filter (STATUS21==0) %>% tabyl(SRS_21, P21QL04) %>% adorn_totals("row") 
-
 merged_EA_completed%>% filter (STATUS21==0) %>% tabyl(WES_21,SRS_21 ) %>% adorn_totals("row") 
-
 
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -328,14 +286,13 @@ merged_EA_completed <- merged_EA_completed %>%
         ifelse(P21QL04 %in% c(-8, -7, -3, -2, -1), NA, P21QL04)))
   )
 
-################
-##### MoA  #####
-################
+###############################
+### MoA oucome construction ###
+###############################
 
 # 1) Financial independence ####
 
 # a) Contribution to HH finance
-
 # 2018
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -345,7 +302,6 @@ merged_EA_completed <- merged_EA_completed %>%
       ifelse((IDPERS == H18I57A1| IDPERS == H18I57A2| IDPERS == H18I57A3| IDPERS == H18I57A4|IDPERS == H18I57A5), 1, 0)
     )
   )
-
 # 2019
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -355,7 +311,6 @@ merged_EA_completed <- merged_EA_completed %>%
       ifelse((IDPERS == H19I57A1| IDPERS == H19I57A2| IDPERS == H19I57A3| IDPERS == H19I57A4|IDPERS == H19I57A5), 1, 0)
     )
   )
-
 # 2020
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -365,7 +320,6 @@ merged_EA_completed <- merged_EA_completed %>%
       ifelse((IDPERS == H20I57A1| IDPERS == H20I57A2| IDPERS == H20I57A3| IDPERS == H20I57A4|IDPERS == H20I57A5), 1, 0)
     )
   )
-
 # 2021
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -377,7 +331,6 @@ merged_EA_completed <- merged_EA_completed %>%
   )
 
 # b) Expenses covering
-
 # 2018
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -387,7 +340,6 @@ merged_EA_completed <- merged_EA_completed %>%
       ifelse((H18I50 == 1| H18I50 == 2), 1, 0)
     )
   )
-
 # 2019
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -397,7 +349,6 @@ merged_EA_completed <- merged_EA_completed %>%
       ifelse((H19I50 == 1| H19I50 == 2), 1, 0)
     )
   )
-
 # 2020
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -407,8 +358,6 @@ merged_EA_completed <- merged_EA_completed %>%
       ifelse((H21I50 == 1| H21I50 == 2), 1, 0)
     )
   )
-
-
 # 2021
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -419,9 +368,7 @@ merged_EA_completed <- merged_EA_completed %>%
     )
   )
 
-
-# c) Expenses covering and IDPERS pays
-
+# c) Financial indep outcome
 #2018
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -431,7 +378,6 @@ merged_EA_completed <- merged_EA_completed %>%
       ifelse((Fin_Partic_18 == 1 & Exp_Cov_18 == 1), 1, 0)
     )
   )
-
 #2019
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -441,7 +387,6 @@ merged_EA_completed <- merged_EA_completed %>%
       ifelse((Fin_Partic_19 == 1 & Exp_Cov_19 == 1), 1, 0)
     )
   )
-
 #2020
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -451,7 +396,6 @@ merged_EA_completed <- merged_EA_completed %>%
       ifelse((Fin_Partic_20 == 1 & Exp_Cov_20 == 1), 1, 0)
     )
   )
-
 #2021
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -463,15 +407,11 @@ merged_EA_completed <- merged_EA_completed %>%
   )
 
 
-
-
 # 2) Finding a job 
-# I'll try to avoid constructed variables 
-# and filter by P$$W01, P$$W02, P$$W03
+# I'll try to avoid constructed variables and filter by P$$W01, P$$W02, P$$W03
 
 
 # 2018
-
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
     Job_18 = ifelse(
@@ -481,9 +421,7 @@ merged_EA_completed <- merged_EA_completed %>%
     )
   )
 
-
 # 2019
-
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
     Job_19 = ifelse(
@@ -494,7 +432,6 @@ merged_EA_completed <- merged_EA_completed %>%
   )
 
 # 2020
-
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
     Job_20 = ifelse(
@@ -505,7 +442,6 @@ merged_EA_completed <- merged_EA_completed %>%
   )
 
 # 2021
-
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
     Job_21 = ifelse(
@@ -515,11 +451,7 @@ merged_EA_completed <- merged_EA_completed %>%
     )
   )
 
-
-
-# 3) Stable relationship 
-
-# if they live together or more that 2 years together
+# 3) Stable relationship (if they live together or >/= 2 years together)
 
 # 2018
 merged_EA_completed <- merged_EA_completed %>% 
@@ -559,7 +491,6 @@ merged_EA_completed <- merged_EA_completed %>%
   )
 
 # 4) Independent housing  #
-
 merged_EA_completed %>% filter(STATUS18 ==0) %>%  tabyl(HLDTYP18, ADUK1_18)
 merged_EA_completed %>% filter(STATUS18 ==0) %>%  tabyl(HLDFFS18, ADUK1_18) # this or the next one to choose
 merged_EA_completed %>% filter(STATUS18 ==0) %>%  tabyl(HLDCEN18, ADUK1_18)
@@ -636,7 +567,6 @@ merged_EA_completed <- merged_EA_completed %>%
     )
   )
 
-
 # 2021
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
@@ -648,8 +578,7 @@ merged_EA_completed <- merged_EA_completed %>%
   )
 
 
-# 6) Creation of a total score
-
+# 6) Creation of a total score for 2018 to 2021
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
     MoA_18 = ifelse(
@@ -712,14 +641,13 @@ merged_EA_completed <- merged_EA_completed %>%
 
 
 
-#####################################
-######   Mental health       ########
-#####################################
+##########################################################################
+################   Mental health  outcomes creation     ##################
+##########################################################################
 
 # 1) Listlessness score creation
 
 # 2018
-
 merged_EA_completed <- merged_EA_completed %>% 
   mutate(
     Score_Listlessness_18 = ifelse(
@@ -734,7 +662,6 @@ merged_EA_completed <- merged_EA_completed %>%
   )
 
 # 2019
-
 merged_EA_completed <- merged_EA_completed %>%   mutate(
   Score_Listlessness_19 = ifelse(
     is.na(STATUS19), 
@@ -749,7 +676,6 @@ merged_EA_completed <- merged_EA_completed %>%   mutate(
 
 
 # 2020
-
 merged_EA_completed <- merged_EA_completed %>%   mutate(
   Score_Listlessness_20 = ifelse(
     is.na(STATUS20), 
@@ -763,7 +689,6 @@ merged_EA_completed <- merged_EA_completed %>%   mutate(
 )
 
 # 2021
-
 merged_EA_completed <- merged_EA_completed %>%   mutate(
   Score_Listlessness_21 = ifelse(
     is.na(STATUS21), 
@@ -778,7 +703,6 @@ merged_EA_completed <- merged_EA_completed %>%   mutate(
 
 
 # 2) Life satisfaction creation    
-
 
 # 2018
 merged_EA_completed <- merged_EA_completed %>% 
@@ -830,7 +754,7 @@ merged_EA_completed <- merged_EA_completed %>%
         ))
   )
 
-# 3) Emotion score creation 
+# 3) Negative Emotion score creation 
 
 # 2018
 merged_EA_completed <- merged_EA_completed %>% 
@@ -906,7 +830,8 @@ merged_EA_completed <- merged_EA_completed %>%
 #### COMMON DATASET CREATION ####
 #################################
 
-# Create a new data set with the selected columns
+# 1) New data set with the selected columns
+
 Dataset <- merged_EA_completed %>%
   dplyr::select("IDPERS", starts_with("SEX"), starts_with("IDHOUS"), starts_with("AGE"),
                 starts_with("STATUS"), starts_with("EDUCAT"), starts_with("CANTON"), 
@@ -1079,7 +1004,6 @@ Dataset <- Dataset %>%
 
 
 # 2019
-
 columns_to_inspect <- c("P19MODES", "P19D29","P19P10", "PLINGU19", "P19D161", "OCCUPA19", "P19I01", "EDUCAT19", "P19C01", "CANTON19", "COM2_19", "P19E14" )
 column_classes <- sapply(Dataset [, columns_to_inspect], class)
 print(column_classes)
@@ -1226,15 +1150,12 @@ Dataset <- Dataset %>%
   )
 
 
-
 # 2020
-
 columns_to_inspect <- c( "P20MODES", "P20D29","P20P10", "PLINGU20", "P20D161", "OCCUPA20", "P20I01", "EDUCAT20", "P20C01", "CANTON20", "COM2_20","P20E14" )
 column_classes <- sapply(Dataset [, columns_to_inspect], class)
 print(column_classes)
 
 Dataset <- Dataset  %>% mutate_at(vars(columns_to_inspect), as.character)
-
 
 # recode_factor variable names and values labels
 Dataset <- Dataset %>%
@@ -1374,7 +1295,6 @@ Dataset <- Dataset %>%
                                            '10' = '10', 
                                            .default = NA_character_)
   )
-
 
 # 2021
 
@@ -1565,6 +1485,7 @@ Dataset_long <- Dataset_long %>%
 Dataset_long$Year <- as.factor(Dataset_long$Year)
 
 
+#### Save created data to my PC 
 
 write_xlsx(Dataset_long, path = "C:/Users/.../Created datasets/Dataset_long_MoA&MH&SC.xlsx")
 write_xlsx(Dataset_wide, path = "C:/Users/.../Created datasets/Dataset_wide_MoA&MH&SC.xlsx")
@@ -1572,36 +1493,41 @@ write_xlsx(Dataset_wide, path = "C:/Users/.../Created datasets/Dataset_wide_MoA&
 
 
 
-##########################################
-#####  Correlation of  indicators  #######
-##########################################
+########################################
+#####  Correlation of  outcomes  #######
+########################################
+
 Dataset_long <- read_excel("C:/Users/.../Created datasets/Dataset_long_MoA&MH&SC.xlsx")
 
 # Removing all NA in weights
 Data <- Dataset_long[complete.cases(Dataset_long$new_weight_), ]
 Data %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) # 2333
+
 # 1)  Mental Health
 
-# Select the variables of interest
-selected_variables <- Data[, c("LS_", "Score_Neg_Emotions_", 
-                                     "Score_Listlessness_")]
+# a) Select the variables of interest
+selected_variables <- Data[, c("LS_", "Score_Neg_Emotions_",  "Score_Listlessness_")]
+# b) Convert the selected variables to numeric type
 selected_variables <- sapply(selected_variables, as.numeric)
-
-selected_variables_no_na<-na.omit(selected_variables)
-
-
-# Create the correlation matrix
+# c) Remove rows with missing (NA) values from the selected variables
+selected_variables_no_na<-na.omit(selected_variables) 
+# d) Create an empty matrix for the correlation coefficients, with dimensions equal to the number of selected variables
 correlation_matrix <- matrix(NA, nrow = ncol(selected_variables_no_na), ncol = ncol(selected_variables_no_na))
-
-# Add row and column names
+# e) Assign variable names to the rows and columns of the correlation matrix
 rownames(correlation_matrix) <- colnames(selected_variables_no_na)
 colnames(correlation_matrix) <- colnames(selected_variables_no_na)
-
-# Loop through each pair of variables and calculate the correlation coefficient and p-value
+# f) Compute Correlations and Significance
+# Iterate over each pair of variables in the selected variables
 for (i in 1:ncol(selected_variables_no_na)) {
   for (j in 1:ncol(selected_variables_no_na)) {
+    # Perform Pearson's correlation test between each pair of variables
     cor_test <- cor.test(selected_variables_no_na[, i], selected_variables_no_na[, j], method = "pearson")
+
+    # Adjust the p-value for multiple testing using Holm's method
     p_value <- p.adjust(cor_test$p.value, method = "holm")
+
+    # Based on the adjusted p-value, append significance level symbols to the correlation coefficient
+    # *** for p < 0.001, ** for p < 0.01, * for p < 0.05; if not significant, just the coefficient is shown
     if (p_value < 0.001) {
       correlation_matrix[i, j] <- paste(round(cor_test$estimate, 3), "***", sep = "")
     } else if (p_value < 0.01) {
@@ -1615,21 +1541,13 @@ for (i in 1:ncol(selected_variables_no_na)) {
 }
 
 # 2)  MOA
-
-# Select the variables of interest
 selected_variables_2 <- Data[, c("Fin_Indep_", "Finish_Educ_", 
                                        "Job_", "Ind_H_",
                                        "Stab_R_","MoA_")]
-
 selected_variables_2 <- sapply(selected_variables_2, as.numeric)
-# Create the correlation matrix
 correlation_matrix_2 <- matrix(NA, nrow = ncol(selected_variables_2), ncol = ncol(selected_variables_2))
-
-
-# Add row and column names
 rownames(correlation_matrix_2) <- colnames(selected_variables_2)
 colnames(correlation_matrix_2) <- colnames(selected_variables_2)
-
 # Loop through each pair of variables and calculate the correlation coefficient and p-value
 for (i in 1:ncol(selected_variables_2)) {
   for (j in 1:ncol(selected_variables_2)) {
@@ -1649,23 +1567,13 @@ for (i in 1:ncol(selected_variables_2)) {
 
 
 # 3)  Social Cohesion 
-
-# Select the variables of interest
-selected_variables_3 <- Data[, c("SRS_", "Trust_",
-                                       "Engagement_")]
+selected_variables_3 <- Data[, c("SRS_", "Trust_", "Engagement_")]
 selected_variables_3 <- sapply(selected_variables_3, as.numeric)
-
 selected_variables_no_na_3<-na.omit(selected_variables_3) 
-
-
-# Create the correlation matrix
 correlation_matrix_3 <- matrix(NA, nrow = ncol(selected_variables_no_na_3), 
                                ncol = ncol(selected_variables_no_na_3))
-
-# Add row and column names
 rownames(correlation_matrix_3) <- colnames(selected_variables_no_na_3)
 colnames(correlation_matrix_3) <- colnames(selected_variables_no_na_3)
-
 # Loop through each pair of variables and calculate the correlation coefficient and p-value
 for (i in 1:ncol(selected_variables_no_na_3)) {
   for (j in 1:ncol(selected_variables_no_na_3)) {
@@ -1684,9 +1592,9 @@ for (i in 1:ncol(selected_variables_no_na_3)) {
 }
 
 
-###########################################
-####  Description of the sample   #######
-###########################################
+#################################################################
+####  Description of the sample non weighted and weighted #######
+#################################################################
 
 # Age as numeric
 Data$AGE <- as.numeric(Data$AGE )
@@ -1722,28 +1630,43 @@ Data$Stab_R_ <- relevel(Data$Stab_R_, ref = "0")
 Data$Mode_of_Data_Collection_ <- as.factor(Data$Mode_of_Data_Collection_ )
 levels(Data$Mode_of_Data_Collection_)
 Data$Mode_of_Data_Collection_ <- relevel(Data$Mode_of_Data_Collection_, ref = "CATI")
-
 # Convert Interview_language_ to a factor
 Data$Interview_language_ <- as.factor(Data$Interview_language_ )
 levels(Data$Interview_language_)
 Data$Interview_language_ <- relevel(Data$Interview_language_, ref = "German")
-
 # Convert Gender & IDHOUS to a factor
 Data$Gender <- as.factor(Data$Gender)
 Data$IDHOUS <- as.factor(Data$IDHOUS)
 
-#################################
-# Description of the population #
-#################################
 
-# Weightened description (https://www.bookdown.org/rwnahhas/RMPH/survey-desc.html)
+
+# 1) Non weightened description
+Data %>% group_by(Year) %>% summarise(mean = mean(MoA_, na.rm =T), sd = sd(MoA_, na.rm =T))
+Data %>% group_by(Year) %>% summarise(mean = mean(Health_Status_, na.rm =T), sd = sd(Health_Status_, na.rm =T))
+Data %>% group_by(Year) %>% summarise(mean = mean(Score_Listlessness_, na.rm =T), sd = sd(Score_Listlessness_, na.rm =T))
+Data %>% group_by(Year) %>% summarise(mean = mean(AGE), sd = sd(AGE, na.rm =T))
+
+Data$Political_position_<-as.numeric(Data$Political_position_)
+Data %>% group_by(Year) %>% summarise(mean = mean(Political_position_, na.rm =T), sd = sd(Political_position_, na.rm =T))
+
+Data %>%
+  select(Gender, Mode_of_Data_Collection_, Interview_language_,Finan_satisfaction_, 
+         Health_Status_,Partner_, Education_Level_,Community_Typology_,
+         MoA_,Finish_Educ_, Fin_Indep_, Stab_R_, Job_, Ind_H_, Year,
+         SRS_,Trust_, Engagement_, Score_Listlessness_, Score_Neg_Emotions_, LS_ ) %>%
+  tbl_summary(by = Year, 
+              statistic = list(
+                all_continuous() ~ "{mean} ({sd})", 
+                all_categorical() ~ "{n} ({p}%)"),  # stats and format for categorical columns
+              digits = all_continuous() ~ 1,  
+              missing_text = "Missing" 
+  )
+
+
+# 2) Weightened description 
 Data_survey <- svydesign(ids = ~IDPERS, data = Data, weights = ~new_weight_ )
-
 tabyl( Data_survey[["variables"]][["Year"]])
-
-
 Data_survey$AGE <-as.numeric(Data_survey$AGE)
-
 svyby(~MoA_, by=~Year, design=Data_survey, svymean, na.rm = T)
 x<-svyby(~MoA_, by=~Year, design=Data_survey, svyvar, na.rm=T)
 sqrt(x$MoA_)
@@ -1754,12 +1677,10 @@ svyby(~AGE, by=~Year, design=Data_survey, svymean)
 x<-svyby(~AGE, by=~Year, design=Data_survey, svyvar)
 sqrt(x$AGE)
 svyby(~Gender, by=~Year, design=Data_survey, svytotal)
-
 Data_survey[["variables"]][["Political_position_"]]<- as.numeric(Data_survey[["variables"]][["Political_position_"]])
 svyby(~Political_position_, by=~Year, design=Data_survey, svymean, na.rm = T)
 x<-svyby(~Political_position_, by=~Year, design=Data_survey, svyvar, na.rm=T)
 sqrt(x$Political_position_)
-
 Data_survey[["variables"]][["Score_Listlessness_"]]<- as.numeric(Data_survey[["variables"]][["Score_Listlessness_"]])
 svyby(~Score_Listlessness_, by=~Year, design=Data_survey, svymean, na.rm = T)
 x<-svyby(~Score_Listlessness_, by=~Year, design=Data_survey, svyvar, na.rm=T)
@@ -1782,24 +1703,4 @@ Data_survey %>%
   modify_caption("Weighted descriptive statistics, by year") %>%
   bold_labels()
 
-# Non weightened description
-Data %>% group_by(Year) %>% summarise(mean = mean(MoA_, na.rm =T), sd = sd(MoA_, na.rm =T))
-Data %>% group_by(Year) %>% summarise(mean = mean(Health_Status_, na.rm =T), sd = sd(Health_Status_, na.rm =T))
-Data %>% group_by(Year) %>% summarise(mean = mean(Score_Listlessness_, na.rm =T), sd = sd(Score_Listlessness_, na.rm =T))
-Data %>% group_by(Year) %>% summarise(mean = mean(AGE), sd = sd(AGE, na.rm =T))
 
-Data$Political_position_<-as.numeric(Data$Political_position_)
-Data %>% group_by(Year) %>% summarise(mean = mean(Political_position_, na.rm =T), sd = sd(Political_position_, na.rm =T))
-
-Data %>%
-  select(Gender, Mode_of_Data_Collection_, Interview_language_,Finan_satisfaction_, 
-         Health_Status_,Partner_, Education_Level_,Community_Typology_,
-         MoA_,Finish_Educ_, Fin_Indep_, Stab_R_, Job_, Ind_H_, Year,
-         SRS_,Trust_, Engagement_, Score_Listlessness_, Score_Neg_Emotions_, LS_ ) %>%
-  tbl_summary(by = Year, 
-              statistic = list(
-                all_continuous() ~ "{mean} ({sd})", 
-                all_categorical() ~ "{n} ({p}%)"),  # stats and format for categorical columns
-              digits = all_continuous() ~ 1,  
-              missing_text = "Missing" 
-  )

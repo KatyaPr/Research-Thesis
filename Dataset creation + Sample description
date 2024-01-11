@@ -124,58 +124,45 @@ HH_P_EA_17  <- HH_P_EA_17  %>%
 
 HH_P_EA_17  <- distinct(HH_P_EA_17,IDPERS, .keep_all = TRUE) 
 # This code removes duplicate rows based on the IDPERS
-
 HH_P_EA_17<- HH_P_EA_17[complete.cases(HH_P_EA_17), ]
 # To save only the rows where there are no missing values in any column
-
 dim(HH_P_EA_17) # 1399  692
-# Merging 2018
 
+# Merging 2018
 HH_P_EA_18 <- merge(HH_18, P_EA_2018, by = "IDHOUS18")
 HH_P_EA_18=HH_P_EA_18[order(HH_P_EA_18$IDHOUS18, HH_P_EA_18$IDPERS),]
-
 HH_P_EA_18 %>% select(ends_with(".x"), ends_with(".y")) 
-
 HH_P_EA_18  <- HH_P_EA_18  %>%
   select(-ends_with(".x"), -ends_with(".y"))
-
 HH_P_EA_18  <- distinct(HH_P_EA_18,IDPERS, .keep_all = TRUE) 
-
 HH_P_EA_18<- HH_P_EA_18[complete.cases(HH_P_EA_18), ]
-
 dim(HH_P_EA_18) # 1388  681
 
 # Merging 2019
-
 HH_P_EA_19 <- merge(HH_19, P_EA_19, by = "IDHOUS19")
 HH_P_EA_19=HH_P_EA_19[order(HH_P_EA_19$IDHOUS19, HH_P_EA_19$IDPERS),]
 HH_P_EA_19  <- HH_P_EA_19  %>%
   select(-ends_with(".x"), -ends_with(".y"))
 HH_P_EA_19  <- distinct(HH_P_EA_19,IDPERS, .keep_all = TRUE) 
 HH_P_EA_19<- HH_P_EA_19[complete.cases(HH_P_EA_19), ]
-
 dim(HH_P_EA_19) # 1299 761
 
 # Merging 2020
-
 HH_P_EA_20 <- merge(HH_20, P_EA_20, by = "IDHOUS20")
 HH_P_EA_20=HH_P_EA_20[order(HH_P_EA_20$IDHOUS20, HH_P_EA_20$IDPERS),]
 HH_P_EA_20  <- HH_P_EA_20  %>%
   select(-ends_with(".x"), -ends_with(".y"))
 HH_P_EA_20  <- distinct(HH_P_EA_20,IDPERS, .keep_all = TRUE) 
 HH_P_EA_20<- HH_P_EA_20[complete.cases(HH_P_EA_20), ]
-
 dim(HH_P_EA_20) # 2644  698
 
 # Merging 2021
-
 HH_P_EA_21 <- merge(HH_21, P_EA_21, by = "IDHOUS21")
 HH_P_EA_21=HH_P_EA_21[order(HH_P_EA_21$IDHOUS21, HH_P_EA_21$IDPERS),]
 HH_P_EA_21  <- HH_P_EA_21  %>%
   select(-ends_with(".x"), -ends_with(".y"))
 HH_P_EA_21  <- distinct(HH_P_EA_21,IDPERS, .keep_all = TRUE) 
 HH_P_EA_21<- HH_P_EA_21[complete.cases(HH_P_EA_21), ]
-
 dim(HH_P_EA_21) # 2066  714
 
 
@@ -200,92 +187,61 @@ Masterfile_P<-read.spss("C:/Users/.../Data_SPSS/SHP-Data-WA-SPSS/SHP_MP.sav",
 # 2017
 
 HH_P_EA_MP_17 <- merge(Masterfile_P, HH_P_EA_17, by = "IDPERS", all = FALSE) # The 'all' parameter set to FALSE ensures that only matching IDPERS are included.
-
 dim(HH_P_EA_MP_17) # 1399  838
 
 HH_P_EA_MP_17 %>% select(ends_with(".x"), ends_with(".y")) 
 # To see the duplicated columns, IDHOUS16.x STATUS17.x   PDATE17.x IDHOUS17.y STATUS17.y   PDATE17,y
 # Scince I need IDHOUS17 STATUS17  PDATE17, i'll delete those who ends with ".y" 
-
 HH_P_EA_MP_17 <- HH_P_EA_MP_17  %>%
   select( -ends_with(".y"))
-
 HH_P_EA_MP_17  <- distinct(HH_P_EA_MP_17,IDPERS, .keep_all = TRUE) 
 # This code removes duplicate rows based on the IDPERS
-
 HH_P_EA_MP_17<- HH_P_EA_MP_17[complete.cases(HH_P_EA_MP_17), ]
 # To save only the rows where there are no missing values in any column
-
 dim(HH_P_EA_MP_17) # 1388  835
 
 # 2018
-
-HH_P_EA_MP_18 <- merge(Masterfile_P, HH_P_EA_18, by = "IDPERS", all = FALSE) # The 'all' parameter set to FALSE ensures that only matching IDPERS are included.
-
+HH_P_EA_MP_18 <- merge(Masterfile_P, HH_P_EA_18, by = "IDPERS", all = FALSE) 
 dim(HH_P_EA_MP_18) # 1388  827
-
 HH_P_EA_MP_18 %>% select(ends_with(".x"), ends_with(".y")) 
-# To see the duplicated columns, IDHOUS18.x STATUS18.x   PDATE18.x IDHOUS18.y STATUS18.y   PDATE18.y
-# Scince I need IDHOUS18 STATUS18  PDATE18, i'll delete those who ends with ".y" 
-
 HH_P_EA_MP_18 <- HH_P_EA_MP_18  %>%
   select( -ends_with(".y"))
-
 HH_P_EA_MP_18  <- distinct(HH_P_EA_MP_18,IDPERS, .keep_all = TRUE) 
-# This code removes duplicate rows based on the IDPERS
-
 HH_P_EA_MP_18<- HH_P_EA_MP_18[complete.cases(HH_P_EA_MP_18), ]
-# To save only the rows where there are no missing values in any column
-
 dim(HH_P_EA_MP_18) # 1388  824
 
 # 2019
-
 HH_P_EA_MP_19 <- merge(Masterfile_P, HH_P_EA_19, by = "IDPERS", all = FALSE) 
 dim(HH_P_EA_MP_19) # 1299  907
-
 HH_P_EA_MP_19 <- HH_P_EA_MP_19  %>%
   select( -ends_with(".y"))
-
 HH_P_EA_MP_19  <- distinct(HH_P_EA_MP_19,IDPERS, .keep_all = TRUE) 
-
 HH_P_EA_MP_19<- HH_P_EA_MP_19[complete.cases(HH_P_EA_MP_19), ]
-
 dim(HH_P_EA_MP_19) # 1299  904
 
 # 2020
-
 HH_P_EA_MP_20 <- merge(Masterfile_P, HH_P_EA_20, by = "IDPERS", all = FALSE) 
 dim(HH_P_EA_MP_20) # 2644  844
-
 HH_P_EA_MP_20 <- HH_P_EA_MP_20  %>%
   select( -ends_with(".y"))
-
 HH_P_EA_MP_20  <- distinct(HH_P_EA_MP_20,IDPERS, .keep_all = TRUE) 
-
 HH_P_EA_MP_20<- HH_P_EA_MP_20[complete.cases(HH_P_EA_MP_20), ]
-
 dim(HH_P_EA_MP_20) # 12644  841
 
 # 2021
-
 HH_P_EA_MP_21 <- merge(Masterfile_P, HH_P_EA_21, by = "IDPERS", all = FALSE) 
 dim(HH_P_EA_MP_21) # 2066  860
-
 HH_P_EA_MP_21 <- HH_P_EA_MP_21  %>%
   select( -ends_with(".y"))
-
 HH_P_EA_MP_21  <- distinct(HH_P_EA_MP_21,IDPERS, .keep_all = TRUE) 
-
 HH_P_EA_MP_21<- HH_P_EA_MP_21[complete.cases(HH_P_EA_MP_21), ]
-
 dim(HH_P_EA_MP_21) # 2066  857
 
 #
 ### 2b.1) Exploring the actual participation 
 #
-# Variable : STATUS$$, 
-# if val = 0 then the pearson was interviewed in 20$$ year
+
+# Variable : STATUS$$,  if val = 0 then the pearson was interviewed in 20$$ year
 participation_2017 <- HH_P_EA_MP_17 %>%
   filter(STATUS17.x == 0) %>%
   tabyl(AGE17) %>%
@@ -326,54 +282,41 @@ participation_2021 <- HH_P_EA_MP_21 %>%
 selected_persons_17 <- Masterfile_P %>% 
   filter(STATUS17 == 0) %>%
   select(IDPERS)
-
-# 2) Filter HH_P_EA_18 to only include individuals whose IDPERS exists in selected_persons
+# 2) Filter HH_P_EA_17 to only include individuals whose IDPERS exists in selected_persons
 HH_P_EA_C_17 <- HH_P_EA_17 %>% 
   filter(IDPERS %in% selected_persons_17$IDPERS)
-
 dim(HH_P_EA_C_17) # 922 692
 
 # 2018
-# 1) Filter Masterfile_P 
 selected_persons_18 <- Masterfile_P %>% 
   filter(STATUS18 == 0) %>%
   select(IDPERS)
-
-# 2) Filter HH_P_EA_18 to only include individuals whose IDPERS exists in selected_persons
 HH_P_EA_C_18 <- HH_P_EA_18 %>% 
   filter(IDPERS %in% selected_persons_18$IDPERS)
-
 dim(HH_P_EA_C_18) # 921 681
 
 # 2019
 selected_persons_19 <- Masterfile_P %>% 
   filter(STATUS19 == 0) %>%
   select(IDPERS)
-
 HH_P_EA_C_19 <- HH_P_EA_19 %>% 
   filter(IDPERS %in% selected_persons_19$IDPERS)
-
 dim(HH_P_EA_C_19) # 825 761
 
 # 2020
 selected_persons_20 <- Masterfile_P %>% 
   filter(STATUS20 == 0) %>%
   select(IDPERS)
-
 HH_P_EA_C_20 <- HH_P_EA_20 %>% 
   filter(IDPERS %in% selected_persons_20$IDPERS)
-
 dim(HH_P_EA_C_20) # 1640  698
 
 # 2021
-
 selected_persons_21 <- Masterfile_P %>% 
   filter(STATUS21 == 0) %>%
   select(IDPERS)
-
 HH_P_EA_C_21 <- HH_P_EA_21 %>% 
   filter(IDPERS %in% selected_persons_21$IDPERS)
-
 dim(HH_P_EA_C_21) # 1270  714
 
 
@@ -401,7 +344,6 @@ merged_EA_completed %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) #26
 # 2) duplicate observations because same variables but different values 
 
 table(duplicated(merged_EA_completed$IDPERS)) # False 2628 -> no duplicate values in the IDPERS column after the merge operation.
-
 # Check for duplicated column names
 duplicated_columns <- names(merged_EA_completed)[duplicated(names(merged_EA_completed))]
 if (length(duplicated_columns) > 0) {
@@ -410,11 +352,16 @@ if (length(duplicated_columns) > 0) {
 } else {
   cat("No duplicated column names found.")
 }
-
 ### No duplicated column names found
 
-####### Filtering people with cross sectionnale weight >0
+
+######################################################################
+############################ Reweightening ###########################
+######################################################################
 #WI$$CSS: SHPI-SHPII-SHPIII-(SHPIV as of 2020) combined, cross-sectional individual weight keeping sample size, for year $$
+
+
+# 1) Filtering people with cross sectionnale weight NA
 
 Data_17_21V2<- merged_EA_completed %>% 
   filter(STATUS17 == 0 & WI17CSS != -3|
@@ -425,7 +372,7 @@ Data_17_21V2<- merged_EA_completed %>%
 
 
 
-# 1) Rename the variable
+# 1) Rename the variable and exclude negative / zero weights
 
 Data_17_21V2 <- Data_17_21V2 %>%
   rename(old_CSSW17 = WI17CSS, 
@@ -444,7 +391,8 @@ Data_17_21V2 %>% filter (STATUS21==0) %>% distinct(IDPERS, .keep_all = TRUE) %>%
 Data_17_21V2 %>% filter (STATUS21==0) %>%filter (old_CSSW21 > 0) %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) # 1,237
 Data_17_21V2 %>%   filter(STATUS21==0) %>% filter(old_CSSW21<0)
 
-# I still have some negative values in Data_17_21V2
+# I still have some negative values in Data_17_21V2, retry to exclude 
+
 key_columns <- c("IDPERS")  
 Data_17_21V3 <- Data_17_21V2
 conditions_list <- map(17:21, ~filter(Data_17_21V3, !!sym(paste0("STATUS", .)) == 0 & !!sym(paste0("old_CSSW", .)) < 0))
@@ -466,7 +414,7 @@ Data_17_21V3 %>% filter (old_CSSW20 > 0) %>% tabyl(STATUS20) %>% adorn_totals("r
 Data_17_21V3 %>% filter (old_CSSW21 > 0) %>% tabyl(STATUS21) %>% adorn_totals("row") # 1235
 
 
-# 2) Calculate the sum of the old weights for the subsample
+# 3) Calculate the sum of the old weights for the subsample
 Data_17_21V3 %>% 
   filter(STATUS17 == 0) %>% 
   summarise(sum(old_CSSW17)) # 976.152
@@ -483,25 +431,18 @@ Data_17_21V3 %>%
   filter(STATUS21 == 0) %>% 
   summarise(sum(old_CSSW21)) # 1135.508
 
-# 3) Define the years and corresponding sample sizes
+# 4) Define the years and corresponding sample sizes
 years <- c("17","18", "19", "20", "21")
 sample_sizes <- c(884, 878, 782, 1596, 1235)
 sum_old_weights <- c(976.152, 1011.525, 781.597, 1604.644, 1135.508)
 
-# 4) Create a new column for each year using a for loop
+# 5) Create a new column for each year using a for loop
 for (i in 1:length(years)) {
   Data_17_21V3 <- Data_17_21V3 %>%
     mutate(!!paste0("new_weight_", years[i]) := ifelse(!!sym(paste0("old_CSSW", years[i])) > 0, !!sym(paste0("old_CSSW", years[i])) / sum_old_weights[i] * sample_sizes[i], NA))
 }
 
-# Verification à la main
-
-# 2017 IDPERS 39103
-Data_17_21V3 %>% filter(IDPERS == 39103 ) %>% tabyl (old_CSSW17)
-Data_17_21V3 %>% filter(IDPERS == 39103 ) %>% tabyl (new_weight_17) 
-
-dim(Data_17_21V3)#2544 3547
-
+# Save to computer
 write_xlsx(Data_17_21V3, path = "C:/Users/.../Created datasets/Data_17_21_long_W.xlsx")
 
 
@@ -557,6 +498,9 @@ final_table_participation <- left_join(table_p17, table_p18, by = "AGE") %>%
 
 
 
+################################################################################################
+########################## Total sample description  (long and wide ) ##########################
+################################################################################################
 
 
 ##########################
@@ -1615,6 +1559,8 @@ write_xlsx(SummaryStatData_17_21_wide, path = "C:/Users/.../Created datasets/Sum
 ###############################################################
 ####  Adjustment factors selection + standardizing data #######
 ###############################################################
+
+
 SummaryStatData_17_21_long <-read_excel("C:/Users/.../Created datasets/SummaryStatData_17_21_long.xlsx")
 SummaryStatData_17_21_long %>% distinct(IDPERS, .keep_all = TRUE) %>%count (IDPERS) #2544  unique IDPERS answered
 SummaryStatData_17_21_long %>% filter(STATUS==0) %>% tabyl(Age_, Year) %>% adorn_totals("row")
@@ -1696,6 +1642,9 @@ svytotal(~Interview_language_,design=Data_survey)
 svyby(~Age_, by=~Year, design=Data_survey, svymean, na.rm = T)
 x<-svyby(~Age_, by=~Year, design=Data_survey, svyvar, na.rm=T)
 sqrt(x$Age_)
+
+
+
 ######## To see how many IDPERS share same IDHOUS #####
 SummaryStatData_17_21_long %>% distinct(IDHOUS, .keep_all = TRUE) %>%count (IDHOUS) #2,008  unique IDHOUS answered
 
